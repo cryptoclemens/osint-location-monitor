@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Location Monitor
-**Version:** 0.3.0 | **Letzte Aktualisierung:** 2026-03-10
+**Version:** 0.4.0 | **Letzte Aktualisierung:** 2026-03-10
 
 ---
 
@@ -46,20 +46,20 @@
 
 ---
 
-## Milestone 4 – SvelteKit PWA Frontend
+## Milestone 4 – SvelteKit PWA Frontend ✅
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
-| 4.1 | SvelteKit + Vite konfigurieren, PWA-Plugin einrichten | ⬜ Open | 🔴 Must |
-| 4.2 | Supabase-Client in SvelteKit integrieren | ⬜ Open | 🔴 Must |
-| 4.3 | Dashboard-Seite (`/`) – Übersicht aktive Locations + letzter Alert | ⬜ Open | 🔴 Must |
-| 4.4 | Locations-Seite (`/locations`) – Adresse hinzufügen, bearbeiten, löschen | ⬜ Open | 🔴 Must |
-| 4.5 | Geocoding-Integration (Adresse → Koordinaten via Nominatim) | ⬜ Open | 🔴 Must |
-| 4.6 | Kategorien-Auswahl pro Location (Checkboxen) | ⬜ Open | 🔴 Must |
-| 4.7 | Alert-Historie-Seite (`/alerts`) – Liste aller gesendeten Alerts | ⬜ Open | 🟡 Should |
-| 4.8 | Settings-Seite (`/settings`) – Telegram Chat-ID konfigurieren | ⬜ Open | 🔴 Must |
-| 4.9 | Responsives Design (Mobile-first) | ⬜ Open | 🔴 Must |
-| 4.10 | PWA Manifest + Service Worker + Icons | ⬜ Open | 🔴 Must |
+| 4.1 | SvelteKit + Vite konfigurieren, PWA-Plugin einrichten | ✅ Done | 🔴 Must |
+| 4.2 | Supabase-Client in SvelteKit integrieren | ✅ Done | 🔴 Must |
+| 4.3 | Dashboard-Seite (`/`) – Übersicht aktive Locations + letzter Alert | ✅ Done | 🔴 Must |
+| 4.4 | Locations-Seite (`/locations`) – Adresse hinzufügen, bearbeiten, löschen | ✅ Done | 🔴 Must |
+| 4.5 | Geocoding-Integration (Adresse → Koordinaten via Nominatim) | ✅ Done | 🔴 Must |
+| 4.6 | Kategorien-Auswahl pro Location (Checkboxen) | ✅ Done | 🔴 Must |
+| 4.7 | Alert-Historie-Seite (`/alerts`) – Liste aller gesendeten Alerts | ✅ Done | 🟡 Should |
+| 4.8 | Settings-Seite (`/settings`) – Telegram Chat-ID konfigurieren | ✅ Done | 🔴 Must |
+| 4.9 | Responsives Design (Mobile-first) | ✅ Done | 🔴 Must |
+| 4.10 | PWA Manifest + Service Worker + Icons | ✅ Done | 🔴 Must |
 
 ---
 
