@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "sveltekit",
+  "outputDirectory": ".svelte-kit",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)scripts/' ':(exclude)*.md'"
+}

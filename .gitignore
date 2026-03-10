@@ -35,3 +35,4 @@ logs/
 
 # Vercel
 .vercel/
+.vercel
