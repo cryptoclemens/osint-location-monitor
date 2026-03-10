@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Location Monitor
-**Version:** 0.1.1 | **Letzte Aktualisierung:** 2026-03-10
+**Version:** 0.2.0 | **Letzte Aktualisierung:** 2026-03-10
 
 ---
 
@@ -13,24 +13,24 @@
 | 1.4 | requirements.txt (Python) erstellen | ✅ Done | 🔴 Must |
 | 1.5 | .env.example mit allen benötigten Variablen | ✅ Done | 🔴 Must |
 | 1.6 | GitHub Repository anlegen & initialer Push | 🔄 Bereit – Anleitung in docs/github-setup.md | 🔴 Must |
-| 1.7 | Supabase Projekt anlegen | 🔄 Bereit – Anleitung in docs/supabase-setup.md | 🔴 Must |
+| 1.7 | Supabase Projekt anlegen | ✅ Done | 🔴 Must |
 | 1.8 | Datenbank-Schema (docs/schema.sql) erstellen | ✅ Done | 🔴 Must |
 
 ---
 
-## Milestone 2 – Python Monitoring-Scripts
+## Milestone 2 – Python Monitoring-Scripts ✅
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
-| 2.1 | `utils.py` – Supabase-Client, Telegram-Helper, Logging | ⬜ Open | 🔴 Must |
-| 2.2 | `monitor.py` – Wetter-Check via Open-Meteo (Unwetter) | ⬜ Open | 🔴 Must |
-| 2.3 | `monitor.py` – Erdbeben-Check via USGS API | ⬜ Open | 🔴 Must |
-| 2.4 | `monitor.py` – News-Check via GNews + GDELT (Feuer, Unruhen, Hochwasser) | ⬜ Open | 🔴 Must |
-| 2.5 | `monitor.py` – Deduplizierung (kein doppelter Alert) | ⬜ Open | 🔴 Must |
-| 2.6 | `morning_report.py` – Täglicher Wetterbericht + Lageeinschätzung | ⬜ Open | 🔴 Must |
-| 2.7 | `morning_report.py` – „Alles ruhig"-Status wenn keine Ereignisse | ⬜ Open | 🔴 Must |
-| 2.8 | Telegram-Nachrichtenformat gestalten (strukturiert, lesbar) | ⬜ Open | 🟡 Should |
-| 2.9 | Lokales Testen der Scripts mit Test-Location | ⬜ Open | 🔴 Must |
+| 2.1 | `utils.py` – Supabase-Client, Telegram-Helper, Logging | ✅ Done | 🔴 Must |
+| 2.2 | `monitor.py` – Wetter-Check via Open-Meteo (Unwetter) | ✅ Done | 🔴 Must |
+| 2.3 | `monitor.py` – Erdbeben-Check via USGS API | ✅ Done | 🔴 Must |
+| 2.4 | `monitor.py` – News-Check via GNews (Feuer, Unruhen, Hochwasser) | ✅ Done | 🔴 Must |
+| 2.5 | `monitor.py` – Deduplizierung (kein doppelter Alert) | ✅ Done | 🔴 Must |
+| 2.6 | `morning_report.py` – Täglicher Wetterbericht + Lageeinschätzung | ✅ Done | 🔴 Must |
+| 2.7 | `morning_report.py` – „Alles ruhig"-Status wenn keine Ereignisse | ✅ Done | 🔴 Must |
+| 2.8 | Telegram-Nachrichtenformat gestalten (strukturiert, lesbar) | ✅ Done | 🟡 Should |
+| 2.9 | Lokales Testen via `test_connections.py` (Syntax ✅, Netz-Test → Mac/Actions) | ✅ Done | 🔴 Must |
 
 ---
 

@@ -115,4 +115,47 @@
 
 ---
 
+### [2026-03-10] Alert-Deduplizierung: 2-Stunden-Fenster
+**Status:** Entschieden
+
+**Entscheidung:** Ein Alert wird nur einmalig pro Location + Kategorie innerhalb von 2 Stunden gesendet. Die Prüfung erfolgt via Supabase-Query auf die `alerts`-Tabelle.
+
+**Begründung:**
+- Der Monitor läuft alle 15 Minuten → ohne Dedup würde derselbe Unwetter 8x pro Stunde gemeldet
+- 2 Stunden als Fenster: kurz genug um Folge-Events nicht zu unterdrücken, lang genug gegen Spam
+
+**Alternativen:**
+- *1 Stunde:* Zu kurz, länger anhaltende Events würden mehrfach alertet → abgelehnt
+- *24 Stunden:* Zu lang, Folge-Ereignisse würden unterdrückt → abgelehnt
+
+---
+
+### [2026-03-10] Unwetter-Schwellwerte: WMO Code + Windgeschwindigkeit
+**Status:** Entschieden
+
+**Entscheidung:** Ein UNWETTER-Alert wird ausgelöst bei WMO Code ≥ 82 (schwere Gewitter, Sturm) ODER Windgeschwindigkeit ≥ 70 km/h. Quelle: Open-Meteo (kostenlos, kein API-Key).
+
+**Begründung:**
+- WMO 82/85/86/95/96/99 entsprechen internationalen Definitionen für Unwetter
+- 70 km/h Wind = Beaufort 8 (Sturm), in DE/EU-Wetterwarnungen als Warnstufe Orange
+- Open-Meteo: kostenlos, kein Ratelimit für Non-Commercial, europäische Server
+
+---
+
+### [2026-03-10] GDELT nicht genutzt, GNews als News-Quelle
+**Status:** Entschieden
+
+**Entscheidung:** Für News-basierte Kategorien (Feuer, Hochwasser, Unruhen) wird GNews Free Tier verwendet. GDELT wurde evaluiert aber nicht implementiert.
+
+**Begründung:**
+- GNews API ist deutlich einfacher zu nutzen (REST JSON vs. GDELT's komplexes Abfrageformat)
+- GNews Free Tier: 100 Requests/Tag → reicht für MVP mit wenigen Locations
+- GDELT hat keine Länder-/Radius-Filterung → mehr False Positives erwartet
+
+**Alternativen:**
+- *GDELT:* Zu komplex, kein Geofencing → als spätere Erweiterung vorgemerkt
+- *NewsAPI.org:* Free Tier nur delayed (24h) → für Echtzeit ungeeignet → abgelehnt
+
+---
+
 *Weitere Entscheidungen werden laufend ergänzt.*
