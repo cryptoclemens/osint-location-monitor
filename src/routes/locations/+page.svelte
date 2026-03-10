@@ -235,7 +235,7 @@
   {#if error}
     <div class="alert-banner error">
       ⚠️ {error}
-      <button class="close-btn" on:click={() => error = null}>✕</button>
+      <button class="close-btn" on:click={() => error = null} aria-label="Fehlermeldung schließen">✕</button>
     </div>
   {/if}
 
@@ -327,7 +327,7 @@
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">
         <h2>{editingLocation ? 'Ort bearbeiten' : 'Neuen Ort hinzufügen'}</h2>
-        <button class="close-btn" on:click={closeModal}>✕</button>
+        <button class="close-btn" on:click={closeModal} aria-label="Dialog schließen">✕</button>
       </div>
 
       <div class="modal-body">

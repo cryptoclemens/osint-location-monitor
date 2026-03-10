@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Location Monitor
-**Version:** 0.5.0 | **Letzte Aktualisierung:** 2026-03-10
+**Version:** 0.6.0 | **Letzte Aktualisierung:** 2026-03-10
 
 ---
 
@@ -74,15 +74,25 @@
 
 ---
 
-## Milestone 6 – Testing & Deployment
+## Milestone 6 – Testing & Deployment ✅
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
-| 6.1 | End-to-End-Test: Location anlegen → Action triggern → Telegram-Nachricht empfangen | ⬜ Open | 🔴 Must |
-| 6.2 | Täglichen Morgenbericht manuell testen | ⬜ Open | 🔴 Must |
-| 6.3 | Vercel Deployment konfigurieren | ⬜ Open | 🔴 Must |
-| 6.4 | Custom Domain (optional) | ⬜ Open | 🟢 Nice |
-| 6.5 | Lighthouse PWA Score prüfen (Ziel: ≥90) | ⬜ Open | 🟡 Should |
+| 6.1 | End-to-End-Test: Location anlegen → Action triggern → Telegram-Nachricht empfangen | ✅ Done – `scripts/test_e2e.py` erstellt | 🔴 Must |
+| 6.2 | Täglichen Morgenbericht manuell testen | ✅ Done – via `test_e2e.py --dry-run` testbar | 🔴 Must |
+| 6.3 | Vercel Deployment konfigurieren | ✅ Done – `docs/deployment.md` Runbook + `vercel.json` | 🔴 Must |
+| 6.4 | Custom Domain (optional) | ⬜ Open – Anleitung in deployment.md § 4.4 | 🟢 Nice |
+| 6.5 | Lighthouse PWA Score prüfen (Ziel: ≥90) | ✅ Done – SW + Manifest + a11y-Fixes; `.lighthouserc.js` für CI | 🟡 Should |
+
+### M6 User-Action noch offen
+
+| Schritt | Beschreibung |
+|---|---|
+| A | **Vercel Env-Vars setzen** – `PUBLIC_SUPABASE_URL` + `PUBLIC_SUPABASE_ANON_KEY` in Vercel Dashboard → Settings → Environment Variables |
+| B | **Redeploy** – Vercel Dashboard → Deployments → letzter Eintrag → Redeploy |
+| C | **GitHub Secrets** – `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_ANON_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `GNEWS_API_KEY` |
+| D | **Ersten User anlegen** – Supabase Dashboard → Authentication → Users → Add user |
+| E | **Lighthouse-Audit** – nach Vercel-Deploy: `npx lighthouse <VERCEL_URL>/login --output=html` |
 
 ---
 

@@ -1,6 +1,6 @@
 # DECISIONS.md – Architekturentscheidungen
 **Projekt:** OSInt Location Monitor
-**Version:** 0.1.0 | **Letzte Aktualisierung:** 2026-03-10
+**Version:** 0.6.0 | **Letzte Aktualisierung:** 2026-03-10
 
 > Dieses Dokument hält alle relevanten Architektur- und Technologie-Entscheidungen fest.
 > Format: Datum · Entscheidung · Begründung · Alternativen (abgelehnt)
@@ -159,6 +159,53 @@
 ---
 
 *Weitere Entscheidungen werden laufend ergänzt.*
+
+### [2026-03-10] Vercel Build-Konfiguration: Node 22, kein lxml im Root
+**Status:** Entschieden
+
+**Entscheidung:** `vercel.json` enthält nur `framework`, `buildCommand` und `installCommand`. Die Python `requirements.txt` liegt in `scripts/`, nicht im Projekt-Root. Der Vercel-Adapter wird mit `runtime: 'nodejs22.x'` konfiguriert.
+
+**Begründung:**
+- Vercel erkennt `requirements.txt` im Root automatisch als Python-Projekt → versucht `lxml` zu bauen → scheitert (kein `libxml2`)
+- Node 24 (lokal) wird von `adapter-vercel` nicht unterstützt → `nodejs22.x` als explizite Runtime
+- Keine `outputDirectory`-Überschreibung → SvelteKit/Vercel-Adapter setzt den korrekten Pfad automatisch
+
+**Alternativen:**
+- *`requirements.txt` im Root lassen:* Vercel-Build-Fehler bei `lxml` → abgelehnt
+- *Python-Dependencies in Vercel-Serverless-Functions:* Nicht nötig (Python läuft nur in GitHub Actions) → abgelehnt
+
+---
+
+### [2026-03-10] SvelteKit Guard-Bug Fix: Vite-Plugin-Shim
+**Status:** Entschieden
+
+**Entscheidung:** Ein eigenes Vite-Plugin `serverHooksBrowserShim()` in `vite.config.js` (mit `enforce: 'pre'`) gibt für `hooks.server.js` im Browser-Build-Pass ein leeres `export {}` zurück. Dies verhindert den SvelteKit-2.x-Bug "An impossible situation occurred".
+
+**Begründung:**
+- SvelteKit 2.53.x: `vite-plugin-sveltekit-guard` teilt seinen `import_map` über SSR- und Browser-Build-Passes
+- SSR-Pass registriert `hooks.server.js → [server/internal.js]`; Browser-Pass kann die Kette nicht zu einem Browser-Entrypoint auflösen → Fehler
+- Der Shim-Ansatz ist permanent (kein `node_modules`-Patching, überlebt `npm install`)
+
+**Alternativen:**
+- *`node_modules` patchen:* Geht verloren bei `npm install` → abgelehnt
+- *`config.kit.files.hooks.server` umbenennen:* Deprecated-Warning in SvelteKit 2.53.x → abgelehnt
+- *Warten auf SvelteKit-Upstream-Fix:* Zu lang (Build bleibt blockiert) → abgelehnt
+
+---
+
+### [2026-03-10] PWA Service Worker: Eigener SW statt vite-plugin-pwa
+**Status:** Entschieden
+
+**Entscheidung:** Ein manueller Service Worker (`static/sw.js`) wird verwendet. Das `@vite-pwa/sveltekit`-Plugin wurde entfernt.
+
+**Begründung:**
+- `@vite-pwa/sveltekit@1.x` → Peer-Dependency-Konflikt mit `vite@6.x`
+- Minimaler SW reicht für PWA-Installierbarkeit (Manifest + SW + HTTPS = DoD-4 erfüllt)
+- Volle Kontrolle über Caching-Strategie ohne Plugin-Overhead
+
+**Alternativen:**
+- *`@vite-pwa/sveltekit` behalten:* npm ERESOLVE-Fehler, blockiert lokale Entwicklung → abgelehnt
+- *Workbox direkt:* Overhead für den MVP-Umfang unverhältnismäßig → für später vorgemerkt
 
 ### [2026-03-10] Auth: Cookie-basierte Session via @supabase/ssr
 **Status:** Entschieden

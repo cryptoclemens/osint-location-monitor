@@ -2,10 +2,21 @@
   import { page } from '$app/stores';
   import { goto, invalidateAll } from '$app/navigation';
   import { supabase } from '$lib/supabase.js';
+  import { onMount } from 'svelte';
 
   export let data;
 
   $: user = data.user;
+
+  // Register Service Worker for PWA installability
+  onMount(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js', { scope: '/' })
+        .then((reg) => console.debug('[SW] registered, scope:', reg.scope))
+        .catch((err) => console.warn('[SW] registration failed:', err));
+    }
+  });
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -52,7 +63,7 @@
 
   {#if user}
     <footer>
-      <p>OSInt Location Monitor v0.5.0 &mdash;
+      <p>OSInt Location Monitor v0.6.0 &mdash;
         <a href="https://github.com/cryptoclemens/osint-location-monitor" target="_blank">GitHub</a>
       </p>
     </footer>
