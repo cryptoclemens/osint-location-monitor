@@ -1,9 +1,9 @@
 # TASKS.md – OSInt Location Monitor
-**Version:** 0.1.0 | **Letzte Aktualisierung:** 2026-03-10
+**Version:** 0.1.1 | **Letzte Aktualisierung:** 2026-03-10
 
 ---
 
-## Milestone 1 – Projektsetup ✅
+## Milestone 1 – Projektsetup (fast ✅ – 2 Tasks manuell durch Clemens)
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
@@ -12,8 +12,8 @@
 | 1.3 | package.json (SvelteKit) initialisieren | ✅ Done | 🔴 Must |
 | 1.4 | requirements.txt (Python) erstellen | ✅ Done | 🔴 Must |
 | 1.5 | .env.example mit allen benötigten Variablen | ✅ Done | 🔴 Must |
-| 1.6 | GitHub Repository anlegen & initialer Push | ⬜ Open | 🔴 Must |
-| 1.7 | Supabase Projekt anlegen | ⬜ Open | 🔴 Must |
+| 1.6 | GitHub Repository anlegen & initialer Push | 🔄 Bereit – Anleitung in docs/github-setup.md | 🔴 Must |
+| 1.7 | Supabase Projekt anlegen | 🔄 Bereit – Anleitung in docs/supabase-setup.md | 🔴 Must |
 | 1.8 | Datenbank-Schema (docs/schema.sql) erstellen | ✅ Done | 🔴 Must |
 
 ---

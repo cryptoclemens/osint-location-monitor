@@ -69,4 +69,50 @@
 
 ---
 
+### [2026-03-10] Datenbankschema: RLS auf allen Tabellen
+**Status:** Entschieden
+
+**Entscheidung:** Row-Level-Security (RLS) ist auf allen Tabellen aktiviert. Jeder User sieht und bearbeitet nur seine eigenen Daten. Die Python-Scripts (GitHub Actions) nutzen den `service_role` Key, der RLS umgeht.
+
+**Begründung:**
+- Mehrere Nutzer können die App nutzen (Clemens + Freunde mit Ferienhäusern)
+- Datenisolation ist von Anfang an eingebaut, kein nachträgliches Absichern nötig
+- Supabase RLS ist deklarativ und wird direkt in PostgreSQL erzwungen
+
+**Alternativen:**
+- *Kein RLS, stattdessen App-seitige Filterung:* Sicherheitsrisiko, falsche Queries könnten fremde Daten leaken → abgelehnt
+
+---
+
+### [2026-03-10] Branching-Strategie: main-only für Prototyp
+**Status:** Entschieden
+
+**Entscheidung:** Für den Prototypen gibt es nur den `main`-Branch. Kein Feature-Branching.
+
+**Begründung:**
+- Einzelentwickler, kein Team-Overhead nötig
+- Zeitersparnis in der frühen Entwicklungsphase
+- Kann jederzeit auf Feature-Branches umgestellt werden
+
+**Alternativen:**
+- *Feature-Branches:* Overhead ohne Mehrwert beim Einzelprojekt → für später vorgemerkt
+
+---
+
+### [2026-03-10] GitHub Actions als Scheduler
+**Status:** Entschieden
+
+**Entscheidung:** GitHub Actions Cron Jobs triggern die Python-Scripts alle 15 Minuten (monitor) und täglich um 09:00 Uhr (morning report).
+
+**Begründung:**
+- 0€ Kosten – bei Public Repos sind GitHub Actions unlimitiert kostenlos
+- Kein dedizierter Server nötig, kein "Einschlafen"-Problem
+- Jeder Lauf ist im GitHub-UI sichtbar und nachvollziehbar (Logging kostenlos)
+
+**Alternativen:**
+- *Render/Railway Cron:* Einschlafen-Problem auf Free Tier → abgelehnt
+- *Vercel Cron Jobs:* 60-Sek. Timeout für Serverless Functions zu kurz für Crawler → abgelehnt
+
+---
+
 *Weitere Entscheidungen werden laufend ergänzt.*
