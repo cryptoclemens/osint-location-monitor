@@ -59,9 +59,14 @@
     loading = true;
     error = null;
     try {
-      locations = await getLocations();
+      // Timeout: if Supabase doesn't respond in 10s, show an error
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Zeitüberschreitung – Supabase antwortet nicht (10s). Bitte Seite neu laden.')), 10000)
+      );
+      locations = await Promise.race([getLocations(), timeout]);
     } catch (e) {
-      error = e.message;
+      console.error('[locations] loadLocations error:', e);
+      error = e?.message ?? String(e);
     } finally {
       loading = false;
     }

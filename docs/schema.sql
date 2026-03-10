@@ -1,5 +1,5 @@
 -- OSInt Location Monitor – Supabase Database Schema
--- Version: 0.1.0 | Created: 2026-03-10
+-- Version: 0.6.0 | Created: 2026-03-10
 -- Run this in the Supabase SQL Editor to set up the database.
 
 -- ─────────────────────────────────────────────
@@ -12,6 +12,23 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Auto-create a profile row whenever a new auth user is created.
+-- IMPORTANT: Without this trigger, createLocation() will fail with a
+-- foreign key constraint error (locations.user_id → profiles.id).
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email)
+  VALUES (NEW.id, NEW.email)
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- ─────────────────────────────────────────────
 -- LOCATIONS
