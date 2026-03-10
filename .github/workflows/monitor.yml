@@ -1,0 +1,49 @@
+name: 🚨 Location Monitor (every 15 min)
+
+# Runs every 15 minutes and checks all active locations for critical events.
+# Sends Telegram alerts if events are detected.
+# Can also be triggered manually via GitHub UI for testing.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # Every 15 minutes, UTC
+  workflow_dispatch:          # Manual trigger via GitHub Actions UI
+
+jobs:
+  monitor:
+    name: Run Location Monitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10       # Kill job if it hangs
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"        # Cache pip dependencies for faster runs
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monitor
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+          GNEWS_API_KEY:        ${{ secrets.GNEWS_API_KEY }}
+        run: python scripts/monitor.py --verbose
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d text="⚠️ *OSInt Monitor* – GitHub Action fehlgeschlagen!%0A_Bitte Logs prüfen: https://github.com/${{ github.repository }}/actions_" \
+            -d parse_mode="Markdown"

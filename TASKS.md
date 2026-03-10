@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Location Monitor
-**Version:** 0.2.0 | **Letzte Aktualisierung:** 2026-03-10
+**Version:** 0.3.0 | **Letzte Aktualisierung:** 2026-03-10
 
 ---
 
@@ -34,15 +34,15 @@
 
 ---
 
-## Milestone 3 – GitHub Actions
+## Milestone 3 – GitHub Actions (fast ✅ – Push + manueller Test durch Clemens)
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
-| 3.1 | `monitor.yml` – Cron alle 15 Min, Python-Script ausführen | ⬜ Open | 🔴 Must |
-| 3.2 | `morning-report.yml` – Cron täglich 09:00 Uhr | ⬜ Open | 🔴 Must |
-| 3.3 | GitHub Secrets für alle API-Keys konfigurieren | ⬜ Open | 🔴 Must |
-| 3.4 | Actions-Lauf manuell triggern & testen | ⬜ Open | 🔴 Must |
-| 3.5 | Fehlerbenachrichtigung bei Action-Fehler (optional) | ⬜ Open | 🟢 Nice |
+| 3.1 | `monitor.yml` – Cron alle 15 Min, Python-Script ausführen | ✅ Done | 🔴 Must |
+| 3.2 | `morning-report.yml` – Cron täglich 09:00 Uhr (07:00 UTC) | ✅ Done | 🔴 Must |
+| 3.3 | GitHub Secrets für alle API-Keys konfigurieren | ✅ Done | 🔴 Must |
+| 3.4 | Actions-Lauf manuell triggern & testen | 🔄 Bereit – nach git push via GitHub UI | 🔴 Must |
+| 3.5 | Fehlerbenachrichtigung bei Action-Fehler | ✅ Done (in beiden Workflows) | 🟢 Nice |
 
 ---
 

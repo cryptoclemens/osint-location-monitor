@@ -1,0 +1,53 @@
+name: ☀️ Morning Report (daily 09:00)
+
+# Sends a daily morning briefing to Telegram at 09:00 CET (08:00 UTC).
+# Note: GitHub Actions uses UTC. Adjust cron hour for summer/winter time:
+#   Winter (CET  = UTC+1): 08:00 UTC = 09:00 CET  → cron hour: 8
+#   Summer (CEST = UTC+2): 07:00 UTC = 09:00 CEST → cron hour: 7
+# Set to 07:00 UTC so it arrives at 09:00 during summer (CEST).
+# In winter it arrives at 08:00 CET – one hour early. Adjust if needed.
+# Can also be triggered manually via GitHub UI for immediate testing.
+
+on:
+  schedule:
+    - cron: "0 7 * * *"      # 07:00 UTC = 09:00 CEST (summer) / 08:00 CET (winter)
+  workflow_dispatch:          # Manual trigger via GitHub Actions UI
+
+jobs:
+  morning-report:
+    name: Send Morning Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send morning report
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+          GNEWS_API_KEY:        ${{ secrets.GNEWS_API_KEY }}
+        run: python scripts/morning_report.py --verbose
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d text="⚠️ *OSInt Morgenbericht* – GitHub Action fehlgeschlagen!%0A_Bitte Logs prüfen: https://github.com/${{ github.repository }}/actions_" \
+            -d parse_mode="Markdown"
