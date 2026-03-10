@@ -159,3 +159,52 @@
 ---
 
 *Weitere Entscheidungen werden laufend ergänzt.*
+
+### [2026-03-10] Auth: Cookie-basierte Session via @supabase/ssr
+**Status:** Entschieden
+
+**Entscheidung:** Supabase Auth wird mit dem `@supabase/ssr` Paket eingebunden. Sessions werden als httpOnly-Cookie gespeichert (kein localStorage). Die Validierung erfolgt server-seitig in `hooks.server.js` via `getUser()` (JWT-Verifikation), nicht nur `getSession()`.
+
+**Begründung:**
+- `@supabase/ssr` ist die offizielle Supabase-Empfehlung für SvelteKit SSR
+- httpOnly-Cookies sind sicherer als localStorage (kein XSS-Risiko)
+- `getUser()` verifiziert den JWT gegen Supabase – verhindert gefälschte Cookies
+- Route Guards laufen server-seitig im `+layout.server.js` → kein Flash of Unauthenticated Content
+
+**Alternativen:**
+- *`@supabase/auth-helpers-sveltekit` (deprecated):* Offiziell nicht mehr empfohlen → abgelehnt
+- *Nur Client-seitige Guards:* Unsicher, User sieht kurz den Inhalt vor dem Redirect → abgelehnt
+
+---
+
+### [2026-03-10] Auth: Kein Magic Link / OAuth für MVP
+**Status:** Entschieden
+
+**Entscheidung:** Nur Email + Passwort Login für das MVP. Neue User werden direkt in Supabase Dashboard angelegt (Authentication → Users → Invite).
+
+**Begründung:**
+- MVP ist ein Single-User-Tool (Clemens + wenige Freunde)
+- Kein Self-Registration nötig – Kontrolle über Wer Zugang hat
+- Weniger Komplexität im MVP, Magic Link / OAuth kann später ergänzt werden
+
+**Alternativen:**
+- *Magic Link:* Einfacher für User, aber braucht eigene Email-Templates → für später vorgemerkt
+- *Google OAuth:* Sinnvoll wenn mehr Nutzer, aber Overhead für MVP → abgelehnt
+
+---
+
+### [2026-03-10] RLS: Profile-Trigger für automatische Erstellung
+**Status:** Entschieden
+
+**Entscheidung:** Ein PostgreSQL-Trigger erstellt automatisch einen `profiles`-Eintrag wenn ein User in Supabase Auth angelegt wird. Ohne diesen Trigger würde `createLocation()` fehlschlagen, da `locations.user_id → profiles.id`.
+
+**Begründung:**
+- `locations.user_id` referenziert `profiles.id` (nicht direkt `auth.users.id`)
+- Ohne Profil → Foreign-Key-Constraint-Fehler beim Location anlegen
+- Trigger ist idempotent (`ON CONFLICT DO NOTHING`) und läuft automatisch
+
+**Alternativen:**
+- *Profile manuell anlegen:* Fehleranfällig und schlechte UX → abgelehnt
+- *locations.user_id direkt auf auth.users:* Würde Profile-Tabelle unnötig machen, aber wir brauchen profiles für telegram_chat_id → abgelehnt
+
+---

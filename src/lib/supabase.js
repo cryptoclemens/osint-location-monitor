@@ -1,13 +1,33 @@
-// supabase.js – Supabase client for SvelteKit frontend
-// Uses the PUBLIC anon key (safe for browser) – RLS ensures data isolation.
-// Server-side scripts use the SERVICE_KEY instead (see scripts/utils.py).
+// supabase.js – Browser-side Supabase client (SvelteKit frontend)
+// Uses the PUBLIC anon key + cookie-based session via @supabase/ssr.
+// Server-side scripts (GitHub Actions) use SERVICE_KEY → bypass RLS.
 
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 
-const supabaseUrl  = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseKey  = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+// Singleton browser client – cookies are synced automatically
+export const supabase = createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY);
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// ── Auth helpers ───────────────────────────────────────────
+
+/** Returns the currently logged-in user object, or null. */
+export async function getUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user ?? null;
+}
+
+/** Sign in with email + password. Throws on failure. */
+export async function signIn(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
+}
+
+/** Sign out the current user. */
+export async function signOut() {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+}
 
 // ── Locations ─────────────────────────────────────────────
 
@@ -21,9 +41,13 @@ export async function getLocations() {
 }
 
 export async function createLocation(location) {
+  // Attach the current user's ID – required by RLS policy
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Nicht eingeloggt');
+
   const { data, error } = await supabase
     .from('locations')
-    .insert(location)
+    .insert({ ...location, user_id: user.id })
     .select()
     .single();
   if (error) throw error;
@@ -49,7 +73,7 @@ export async function deleteLocation(id) {
 // ── Categories ────────────────────────────────────────────
 
 export async function setLocationCategories(locationId, categories) {
-  // Delete existing, then insert fresh selection
+  // Delete existing rows, then insert fresh selection
   await supabase.from('location_categories').delete().eq('location_id', locationId);
   if (categories.length === 0) return;
   const rows = categories.map(cat => ({
@@ -75,11 +99,27 @@ export async function getAlerts(limit = 50) {
 
 // ── Geocoding (Nominatim / OpenStreetMap) ─────────────────
 
+/**
+ * Geocode a free-text address using Nominatim.
+ * Returns { lat, lon, display_name, country_code } or null.
+ */
 export async function geocodeAddress(address) {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=5&addressdetails=1`;
   const res = await fetch(url, {
-    headers: { 'Accept-Language': 'de,en', 'User-Agent': 'OSInt-Location-Monitor/1.0' }
+    headers: {
+      'Accept-Language': 'de,en',
+      'User-Agent': 'OSInt-Location-Monitor/1.0'
+    }
   });
-  if (!res.ok) throw new Error('Geocoding request failed');
-  return res.json(); // Array of results with lat, lon, display_name, address
+  if (!res.ok) throw new Error('Geocoding-Anfrage fehlgeschlagen');
+  const results = await res.json();
+  if (!results || results.length === 0) return null;
+
+  const r = results[0];
+  return {
+    lat: parseFloat(r.lat),
+    lon: parseFloat(r.lon),
+    display_name: r.display_name,
+    country_code: r.address?.country_code?.toUpperCase() ?? ''
+  };
 }

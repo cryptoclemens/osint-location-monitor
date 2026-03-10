@@ -397,8 +397,8 @@
 
         <!-- Categories -->
         <div class="form-group">
-          <label>Überwachungs-Kategorien * <span class="field-hint-inline">(mind. eine)</span></label>
-          <div class="categories-grid">
+          <span class="form-label">Überwachungs-Kategorien * <span class="field-hint-inline">(mind. eine)</span></span>
+          <div class="categories-grid" role="group" aria-label="Überwachungs-Kategorien">
             {#each CATEGORIES as cat}
               <label class="cat-checkbox" class:checked={form.categories[cat.key]}>
                 <input type="checkbox" bind:checked={form.categories[cat.key]} />
@@ -704,7 +704,7 @@
   /* ── Form ────────────────────────────────────────────────── */
   .form-group { margin-bottom: 1.25rem; }
 
-  .form-group label, .toggle-label {
+  .form-group label, .form-label, .toggle-label {
     display: block;
     font-size: 0.83rem;
     color: var(--text-dim);

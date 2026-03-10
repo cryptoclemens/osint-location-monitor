@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Location Monitor
-**Version:** 0.4.0 | **Letzte Aktualisierung:** 2026-03-10
+**Version:** 0.5.0 | **Letzte Aktualisierung:** 2026-03-10
 
 ---
 
@@ -63,14 +63,14 @@
 
 ---
 
-## Milestone 5 – Auth & Sicherheit
+## Milestone 5 – Auth & Sicherheit ✅
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
-| 5.1 | Supabase Auth (Email/Passwort) integrieren | ⬜ Open | 🟡 Should |
-| 5.2 | Login-Seite (`/login`) erstellen | ⬜ Open | 🟡 Should |
-| 5.3 | Route Guards – geschützte Seiten nur für eingeloggte User | ⬜ Open | 🟡 Should |
-| 5.4 | Row-Level-Security in Supabase (User sieht nur eigene Locations) | ⬜ Open | 🟡 Should |
+| 5.1 | Supabase Auth (Email/Passwort) integrieren | ✅ Done | 🟡 Should |
+| 5.2 | Login-Seite (`/login`) erstellen | ✅ Done | 🟡 Should |
+| 5.3 | Route Guards – geschützte Seiten nur für eingeloggte User | ✅ Done | 🟡 Should |
+| 5.4 | Row-Level-Security in Supabase (User sieht nur eigene Locations) | ✅ Done | 🟡 Should |
 
 ---
 

@@ -187,9 +187,10 @@
 
         <!-- Test button -->
         <div class="form-group">
-          <label>Verbindung testen</label>
+          <span class="form-label">Verbindung testen</span>
           <button
             class="btn btn-secondary"
+            aria-label="Telegram-Verbindung testen"
             on:click={handleTestTelegram}
             disabled={testing || !chatId.trim()}
           >
@@ -377,7 +378,7 @@
   .form-group { margin-bottom: 1.5rem; }
   .form-group:last-child { margin-bottom: 0; }
 
-  .form-group label {
+  .form-group label, .form-label {
     display: block;
     font-size: 0.82rem;
     color: var(--text-dim);
