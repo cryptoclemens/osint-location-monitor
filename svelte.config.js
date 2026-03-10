@@ -8,16 +8,9 @@ const config = {
     adapter: adapter({ runtime: 'nodejs22.x' }),
     alias: {
       $lib: './src/lib'
-    },
-    // Rename the server hooks file to avoid a SvelteKit 2.53.x guard bug:
-    // the guard plugin incorrectly flags files matching *.server.* during
-    // the browser build pass when the import_map is populated. Using a
-    // non-*.server.* filename bypasses the faulty check.
-    files: {
-      hooks: {
-        server: 'src/server-hooks.js'
-      }
     }
+    // hooks.server.js stays at default path src/hooks.server.js.
+    // The browser-build guard bug is handled via vite.config.js plugin.
   }
 };
 
