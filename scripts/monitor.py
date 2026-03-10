@@ -15,6 +15,7 @@ import sys
 import argparse
 import requests
 from datetime import datetime, timezone, timedelta
+from typing import Optional
 from loguru import logger
 
 # Add parent dir so utils is importable when called from project root
@@ -53,7 +54,7 @@ GNEWS_QUERIES = {
 
 WIND_THRESHOLD_KMH = 70  # Wind speed triggering an alert
 
-def check_weather(lat: float, lon: float) -> dict | None:
+def check_weather(lat: float, lon: float) -> Optional[dict]:
     """
     Fetch current weather from Open-Meteo and return an alert dict
     if severe conditions are detected, else None.
@@ -110,7 +111,7 @@ QUAKE_RADIUS_KM    = 100   # Search radius around location
 QUAKE_MIN_MAG      = 4.0   # Minimum magnitude to alert
 QUAKE_LOOKBACK_MIN = 20    # Check events in last N minutes
 
-def check_earthquake(lat: float, lon: float) -> dict | None:
+def check_earthquake(lat: float, lon: float) -> Optional[dict]:
     """
     Query USGS for recent earthquakes within QUAKE_RADIUS_KM.
     Returns an alert dict if a quake above QUAKE_MIN_MAG is found, else None.
@@ -162,7 +163,7 @@ def check_earthquake(lat: float, lon: float) -> dict | None:
 
 GNEWS_MAX_RESULTS = 3  # Articles to fetch per query
 
-def check_news(location_name: str, country_code: str, category: str) -> dict | None:
+def check_news(location_name: str, country_code: str, category: str) -> Optional[dict]:
     """
     Search GNews for recent articles matching the category near the location.
     Returns an alert dict if relevant articles are found, else None.

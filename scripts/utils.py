@@ -9,6 +9,7 @@ import sys
 import requests
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from typing import Optional
 from loguru import logger
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -56,7 +57,7 @@ def setup_logging(level: str = "INFO") -> None:
 # Supabase client
 # ─────────────────────────────────────────────
 
-_supabase_client: Client | None = None
+_supabase_client: Optional[Client] = None
 
 def get_supabase() -> Client:
     """Return a Supabase client using service_role key (bypasses RLS for scripts)."""
