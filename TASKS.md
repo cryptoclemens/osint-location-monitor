@@ -96,6 +96,30 @@
 
 ---
 
+## Milestone 7 – Landing Page & Self-Service-Onboarding
+
+**Ziel:** Die App öffnet sich für neue Interessenten. Eine öffentliche Startseite erklärt OSInt, Nutzer können sich selbst registrieren, Telegram verknüpfen und eigene Orte anlegen – ohne dass Clemens jeden User manuell in Supabase anlegen muss.
+
+| # | Task | Status | Priorität |
+|---|---|---|---|
+| 7.1 | Landing Page (`/`) – öffentlich, erklärt Was/Wie/Warum OSInt Monitor | ⬜ Open | 🔴 Must |
+| 7.2 | Nutzer-Registrierung aktivieren – Email + Passwort Self-Signup via Supabase Auth | ⬜ Open | 🔴 Must |
+| 7.3 | Login-Seite anpassen – Link zu „Noch kein Konto? Registrieren" | ⬜ Open | 🔴 Must |
+| 7.4 | Registrierungs-Seite (`/register`) – Email + Passwort + Bestätigungsmail | ⬜ Open | 🔴 Must |
+| 7.5 | Onboarding-Flow – nach erstem Login: Telegram-Bot verbinden + ersten Ort anlegen | ⬜ Open | 🟡 Should |
+| 7.6 | Telegram-Setup-Anleitung im Onboarding (Schritt-für-Schritt: Bot starten, Chat-ID ermitteln) | ⬜ Open | 🟡 Should |
+| 7.7 | E-Mail-Bestätigung konfigurieren (Supabase Email Templates anpassen) | ⬜ Open | 🟡 Should |
+| 7.8 | Passwort vergessen / Reset-Flow (`/reset-password`) | ⬜ Open | 🟢 Nice |
+| 7.9 | Landing Page: SEO-Optimierung (Open Graph, canonical, sitemap) | ⬜ Open | 🟢 Nice |
+
+### Architektur-Entscheidungen M7
+
+- **Routing:** `/` wird zur Landing Page (öffentlich). Dashboard wird nach `/dashboard` verschoben oder bleibt hinter Auth-Guard auf `/`.
+- **Supabase Self-Signup:** In Supabase Dashboard → Authentication → Providers → Email → „Enable Sign Ups" aktivieren.
+- **Onboarding:** Einmaliger Wizard nach erstem Login, der Telegram-Chat-ID und ersten Ort abfragt. State in `profiles.onboarding_done` (Boolean).
+
+---
+
 ## Legende
 
 | Symbol | Bedeutung |
