@@ -7,6 +7,8 @@
   import { supabase } from '$lib/supabase.js';
   import { goto } from '$app/navigation';
   import { onMount, onDestroy } from 'svelte';
+  // PUBLIC_SITE_URL must match Supabase Dashboard → Authentication → URL Configuration → Site URL.
+  import { PUBLIC_SITE_URL } from '$env/static/public';
 
   // ── State ─────────────────────────────────────────────────
   // 'request'  → show email input (initial state)
@@ -66,8 +68,8 @@
     loading = true;
     try {
       const { error: sbErr } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        // After clicking the link the user lands back on this page
-        redirectTo: `${window.location.origin}/reset-password`,
+        // Explicit site URL so Supabase uses the production domain.
+        redirectTo: `${PUBLIC_SITE_URL || window.location.origin}/reset-password`,
       });
       if (sbErr) throw sbErr;
       step = 'sent';

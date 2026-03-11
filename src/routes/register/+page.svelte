@@ -2,6 +2,9 @@
 <script>
   import { supabase } from '$lib/supabase.js';
   import { goto } from '$app/navigation';
+  // PUBLIC_SITE_URL is set in .env.local / Vercel env vars.
+  // It must match the "Site URL" in Supabase Dashboard → Authentication → URL Configuration.
+  import { PUBLIC_SITE_URL } from '$env/static/public';
 
   let email    = '';
   let password = '';
@@ -34,7 +37,10 @@
         password: password,
         options: {
           // After confirmation the user lands on /onboarding
-          emailRedirectTo: `${window.location.origin}/onboarding`,
+          // Use the explicit site URL from env vars so Supabase honors it.
+          // Falls back to the current origin for resilience (e.g. local dev
+          // without the env var set).
+          emailRedirectTo: `${PUBLIC_SITE_URL || window.location.origin}/onboarding`,
         },
       });
 
