@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-  <title>Login – OSInt Monitor</title>
+  <title>Login – OSInt Vacation</title>
 </svelte:head>
 
 <div class="login-page">
@@ -28,7 +28,7 @@
     <!-- Logo -->
     <div class="logo">
       <span class="logo-icon">🛰️</span>
-      <span class="logo-name">OSInt Monitor</span>
+      <span class="logo-name">OSInt Vacation</span>
     </div>
 
     <h1>Anmelden</h1>
@@ -78,10 +78,12 @@
       </button>
     </form>
 
-    <p class="hint">
-      Noch kein Konto? Erstelle einen User direkt in Supabase unter
-      <strong>Authentication → Users → Invite</strong>.
-    </p>
+    <div class="login-footer">
+      <a href="/reset-password" class="link-muted">Passwort vergessen?</a>
+      <p class="register-cta">
+        Noch kein Konto? <a href="/register">Jetzt registrieren</a>
+      </p>
+    </div>
   </div>
 </div>
 
@@ -228,4 +230,10 @@
   }
 
   .hint strong { color: #888; }
+
+  .login-footer { margin-top: 1.5rem; text-align: center; }
+  .link-muted { font-size: 0.82rem; color: #555; display: block; margin-bottom: 0.75rem; }
+  .link-muted:hover { color: #888; }
+  .register-cta { font-size: 0.875rem; color: #666; }
+  .register-cta a { color: #7c9fd4; }
 </style>

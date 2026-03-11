@@ -1,4 +1,4 @@
-// OSInt Location Monitor – Service Worker v0.6.0
+// OSInt Vacation – Service Worker v0.6.0
 // Minimal offline-capable SW for PWA installability
 
 const CACHE_NAME = 'osint-monitor-v1';
@@ -73,7 +73,7 @@ self.addEventListener('fetch', (event) => {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#1a1a2e">
-  <title>OSInt Monitor – Offline</title>
+  <title>OSInt Vacation – Offline</title>
   <style>
     body { background:#0f0f1a; color:#e0e0f0; display:flex; align-items:center;
            justify-content:center; min-height:100vh; font-family:system-ui,sans-serif;

@@ -1,7 +1,7 @@
 {
-  "name": "OSInt Location Monitor",
-  "short_name": "OSInt Monitor",
-  "description": "Überwache deine Orte – erhalte Alerts bei kritischen Ereignissen.",
+  "name": "OSInt Vacation",
+  "short_name": "OSInt Vacation",
+  "description": "Überwache deine Ferienorte – Echtzeit-Alerts via Telegram.",
   "theme_color": "#1a1a2e",
   "background_color": "#0f0f1a",
   "display": "standalone",

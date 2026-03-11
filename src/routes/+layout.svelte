@@ -36,22 +36,25 @@
     <div class="header-inner">
       <a href="/" class="logo">
         <span class="logo-icon">🛰️</span>
-        <span class="logo-text">OSInt Monitor</span>
+        <span class="logo-text">OSInt Vacation</span>
       </a>
 
       {#if user}
         <nav>
-          <a href="/"          class:active={$page.url.pathname === '/'}>Dashboard</a>
+          <a href="/dashboard" class:active={$page.url.pathname === '/dashboard'}>Dashboard</a>
           <a href="/locations" class:active={$page.url.pathname.startsWith('/locations')}>Orte</a>
           <a href="/alerts"    class:active={$page.url.pathname.startsWith('/alerts')}>Alerts</a>
           <a href="/settings"  class:active={$page.url.pathname.startsWith('/settings')}>Einstellungen</a>
         </nav>
-
         <div class="user-area">
           <span class="user-email" title={user.email}>{user.email}</span>
-          <button class="btn-logout" on:click={handleLogout} title="Abmelden">
-            Logout
-          </button>
+          <button class="btn-logout" on:click={handleLogout} title="Abmelden">Logout</button>
+        </div>
+      {:else}
+        <!-- Public nav for landing page -->
+        <div class="public-nav">
+          <a href="/login"    class="nav-link-pub">Anmelden</a>
+          <a href="/register" class="nav-link-pub btn-nav-register">Registrieren</a>
         </div>
       {/if}
     </div>
@@ -63,7 +66,7 @@
 
   {#if user}
     <footer>
-      <p>OSInt Location Monitor v0.6.0 &mdash;
+      <p>OSInt Vacation v0.7.0 &mdash;
         <a href="https://github.com/cryptoclemens/osint-location-monitor" target="_blank">GitHub</a>
       </p>
     </footer>
@@ -236,4 +239,11 @@
   @media (max-width: 420px) {
     nav a { font-size: 0.72rem; padding: 0.3rem 0.4rem; }
   }
+
+  /* Public nav (landing page) */
+  .public-nav { display: flex; align-items: center; gap: 0.5rem; }
+  .nav-link-pub { color: #888; font-size: 0.875rem; padding: 0.35rem 0.75rem; border-radius: 8px; transition: color 0.15s; }
+  .nav-link-pub:hover { color: #ccc; }
+  .btn-nav-register { background: #6366f1; color: #fff !important; font-weight: 500; }
+  .btn-nav-register:hover { background: #5052d0; color: #fff; }
 </style>

@@ -1,173 +1,213 @@
+<!-- Landing Page – OSInt Vacation (public) -->
+<!-- Shown to unauthenticated visitors; logged-in users are redirected to /dashboard -->
 <script>
-  import { onMount } from 'svelte';
-  import { getLocations, getAlerts } from '$lib/supabase.js';
+  export let data;
+  $: user = data?.user ?? null;
 
-  let locations = [];
-  let recentAlerts = [];
-  let loading = true;
-  let error = null;
+  // Feature cards
+  const FEATURES = [
+    { icon: '⛈️', title: 'Unwetter',           desc: 'Sturm, Hagel, Extremregen – via Open-Meteo (WMO Code ≥82 oder Wind ≥70 km/h)' },
+    { icon: '🌊', title: 'Hochwasser',           desc: 'Starkregen und Überflutungsrisiken in deiner Region' },
+    { icon: '🔥', title: 'Feuer & Waldbrand',    desc: 'Nachrichten über Brände im Umkreis – via GNews API' },
+    { icon: '⚠️', title: 'Politische Unruhen',  desc: 'Demonstrationen, Ausschreitungen, Sicherheitswarnungen' },
+    { icon: '🌍', title: 'Erdbeben',             desc: 'Seismische Ereignisse ≥ M4.0 im 100-km-Radius – via USGS' },
+    { icon: '☀️', title: 'Morgenbericht',        desc: 'Täglich 09:00 Uhr: Wetter + Lageeinschätzung per Telegram' },
+  ];
 
-  const CATEGORY_ICONS = {
-    unwetter: '🌩️', hochwasser: '🌊', feuer: '🔥', unruhen: '⚠️', erdbeben: '🏔️'
-  };
-
-  onMount(async () => {
-    try {
-      [locations, recentAlerts] = await Promise.all([
-        getLocations(),
-        getAlerts(10),
-      ]);
-    } catch (e) {
-      error = e.message;
-    } finally {
-      loading = false;
-    }
-  });
-
-  function timeAgo(dateStr) {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const m = Math.floor(diff / 60000);
-    if (m < 1)  return 'gerade eben';
-    if (m < 60) return `vor ${m} Min.`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `vor ${h} Std.`;
-    return `vor ${Math.floor(h / 24)} Tagen`;
-  }
+  const SOURCES = [
+    { icon: '🌤️', name: 'Open-Meteo' },
+    { icon: '📡', name: 'USGS Earthquake' },
+    { icon: '📰', name: 'GNews API' },
+    { icon: '📱', name: 'Telegram Bot API' },
+    { icon: '🗺️', name: 'Nominatim / OSM' },
+  ];
 </script>
 
-<svelte:head><title>Dashboard – OSInt Monitor</title></svelte:head>
+<svelte:head>
+  <title>OSInt Vacation – Überwache deine Ferienorte</title>
+  <meta name="description" content="Erhalte automatische Telegram-Alerts bei Unwetter, Erdbeben, Feuer oder Unruhen rund ums Ferienhaus – kostenlos, in Echtzeit." />
+  <meta property="og:title" content="OSInt Vacation – Dein Ferienort-Frühwarnsystem" />
+  <meta property="og:description" content="Verpasse nie wieder kritische Ereignisse rund ums Ferienhaus. Wetter, Erdbeben, Feuer, Unruhen – direkt per Telegram." />
+  <meta property="og:type" content="website" />
+</svelte:head>
 
-<div class="page-header">
-  <div>
-    <h1>Dashboard</h1>
-    <p class="subtitle">Übersicht deiner überwachten Orte</p>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">🛰️ Echtzeit-Überwachung</div>
+    <h1>Dein Ferienhaus.<br>Immer im Blick.</h1>
+    <p class="hero-sub">
+      OSInt Vacation überwacht öffentliche Daten rund um deine europäischen
+      Ferienorte und schickt dir sofort eine Telegram-Nachricht, wenn etwas
+      Wichtiges passiert.
+    </p>
+    <div class="hero-cta">
+      {#if user}
+        <a href="/dashboard" class="btn-cta-primary">Zum Dashboard →</a>
+      {:else}
+        <a href="/register" class="btn-cta-primary">Kostenlos starten</a>
+        <a href="/login"    class="btn-cta-secondary">Anmelden</a>
+      {/if}
+    </div>
+    <p class="hero-hint">Kostenlos · Keine App nötig · Telegram-Alert in &lt; 15 Min.</p>
   </div>
-  <a href="/locations" class="btn-primary" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.55rem 1.1rem;background:#4f80c4;color:#fff;border-radius:8px;font-weight:500;">
-    + Ort hinzufügen
-  </a>
-</div>
+</section>
 
-{#if loading}
-  <div class="empty-state"><div class="icon">⏳</div><p>Lade Daten…</p></div>
-{:else if error}
-  <div class="error-box">⚠️ Fehler beim Laden: {error}</div>
-{:else}
-
-<!-- Stats row -->
-<div class="stats-row">
-  <div class="stat card">
-    <div class="stat-value">{locations.filter(l => l.is_active !== false).length}</div>
-    <div class="stat-label">Aktive Orte</div>
-  </div>
-  <div class="stat card">
-    <div class="stat-value">{recentAlerts.filter(a => {
-      const d = new Date(a.created_at);
-      return Date.now() - d.getTime() < 86400000;
-    }).length}</div>
-    <div class="stat-label">Alerts heute</div>
-  </div>
-  <div class="stat card">
-    <div class="stat-value">{recentAlerts.filter(a => a.category === 'unwetter').length > 0 ? '⚠️' : '✅'}</div>
-    <div class="stat-label">Wetter-Status</div>
-  </div>
-</div>
-
-<!-- Locations -->
-{#if locations.length === 0}
-  <div class="empty-state">
-    <div class="icon">📍</div>
-    <p>Noch keine Orte hinterlegt.</p>
-    <a href="/locations" style="display:inline-block;margin-top:1rem;padding:0.5rem 1.25rem;background:#4f80c4;color:#fff;border-radius:8px;">
-      Ersten Ort hinzufügen
-    </a>
-  </div>
-{:else}
-  <h2 class="section-title">Deine Orte</h2>
-  <div class="location-grid">
-    {#each locations as loc}
-      {@const activeCategories = (loc.location_categories || []).filter(c => c.is_active)}
-      <div class="card location-card">
-        <div class="loc-header">
-          <div class="loc-name">📍 {loc.name}</div>
-          <a href="/locations" class="loc-edit">✏️</a>
+<!-- FEATURES -->
+<section class="features">
+  <div class="section-inner">
+    <h2>Was OSInt Vacation überwacht</h2>
+    <div class="feature-grid">
+      {#each FEATURES as f}
+        <div class="feature-card">
+          <div class="feature-icon">{f.icon}</div>
+          <div class="feature-title">{f.title}</div>
+          <div class="feature-desc">{f.desc}</div>
         </div>
-        <div class="loc-address">{loc.address}</div>
-        <div class="loc-categories">
-          {#each activeCategories as cat}
-            <span class="category-chip">{CATEGORY_ICONS[cat.category] || ''} {cat.category}</span>
-          {/each}
-          {#if activeCategories.length === 0}
-            <span style="color:#555;font-size:0.8rem">Keine Kategorien aktiv</span>
-          {/if}
-        </div>
-        {#if loc.latitude && loc.longitude}
-          <div class="loc-coords">🌐 {Number(loc.latitude).toFixed(4)}, {Number(loc.longitude).toFixed(4)}</div>
-        {/if}
-      </div>
-    {/each}
+      {/each}
+    </div>
   </div>
-{/if}
+</section>
 
-<!-- Recent Alerts -->
-{#if recentAlerts.length > 0}
-  <h2 class="section-title" style="margin-top:2rem">Letzte Alerts</h2>
-  <div class="alerts-list">
-    {#each recentAlerts as alert}
-      <div class="card alert-item">
-        <div class="alert-header">
-          <span class="alert-icon">{CATEGORY_ICONS[alert.category] || '🔔'}</span>
-          <span class="alert-title">{alert.title}</span>
-          <span class="badge badge-{alert.severity}">{alert.severity}</span>
-        </div>
-        <div class="alert-meta">
-          {#if alert.locations?.name}<span>📍 {alert.locations.name}</span>{/if}
-          <span>🕐 {timeAgo(alert.created_at)}</span>
-          {#if alert.telegram_sent}<span>✅ Telegram</span>{/if}
-        </div>
-      </div>
-    {/each}
-    <a href="/alerts" style="display:block;text-align:center;padding:0.75rem;color:#7c9fd4;font-size:0.875rem">
-      Alle Alerts anzeigen →
-    </a>
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="section-inner narrow">
+    <h2>So funktioniert es</h2>
+    <ol class="steps">
+      <li>
+        <span class="step-num">1</span>
+        <div><strong>Ort hinterlegen</strong>
+          <p>Gib die Adresse deines Ferienhauses ein – Geocoding ermittelt Koordinaten automatisch.</p></div>
+      </li>
+      <li>
+        <span class="step-num">2</span>
+        <div><strong>Telegram verbinden</strong>
+          <p>Starte den OSInt-Vacation-Bot einmalig und hinterlege deine Chat-ID.</p></div>
+      </li>
+      <li>
+        <span class="step-num">3</span>
+        <div><strong>Alerts empfangen</strong>
+          <p>Alle 15 Minuten prüfen unsere Wächter Wetter, Erdbeben und Nachrichten.</p></div>
+      </li>
+      <li>
+        <span class="step-num">4</span>
+        <div><strong>Täglicher Morgenbericht</strong>
+          <p>Täglich 09:00 Uhr: Wetter + politische Lageeinschätzung per Telegram.</p></div>
+      </li>
+    </ol>
   </div>
-{/if}
+</section>
 
+<!-- DATA SOURCES -->
+<section class="sources">
+  <div class="section-inner" style="text-align:center">
+    <h2>Datenquellen</h2>
+    <div class="source-chips">
+      {#each SOURCES as s}
+        <div class="source-chip"><span>{s.icon}</span><span>{s.name}</span></div>
+      {/each}
+    </div>
+    <p class="sources-hint">Alle Quellen sind kostenlos und öffentlich – kein Lock-in.</p>
+  </div>
+</section>
+
+<!-- CTA BOTTOM -->
+{#if !user}
+<section class="cta-bottom">
+  <div class="section-inner" style="text-align:center">
+    <h2>Bereit loszulegen?</h2>
+    <p>Erstelle kostenlos ein Konto und füge deinen ersten Ort hinzu.</p>
+    <a href="/register" class="btn-cta-primary" style="font-size:1rem">Jetzt registrieren</a>
+  </div>
+</section>
 {/if}
 
 <style>
-  .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; gap: 1rem; }
-  h1 { font-size: 1.6rem; font-weight: 700; }
-  .subtitle { color: #666; font-size: 0.875rem; margin-top: 0.2rem; }
-  .section-title { font-size: 1rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+  /* Override main padding for full-width sections */
+  :global(.app > main) { padding: 0 !important; max-width: 100% !important; }
 
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
-  .stat { text-align: center; }
-  .stat-value { font-size: 2rem; font-weight: 700; color: #a8c4e8; }
-  .stat-label { font-size: 0.8rem; color: #666; margin-top: 0.25rem; }
+  section { padding: 4.5rem 1.5rem; }
+  .section-inner { max-width: 900px; margin: 0 auto; }
+  .section-inner.narrow { max-width: 620px; }
 
-  .location-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-  .location-card { display: flex; flex-direction: column; gap: 0.5rem; }
-  .loc-header { display: flex; justify-content: space-between; align-items: center; }
-  .loc-name { font-weight: 600; font-size: 0.95rem; }
-  .loc-edit { font-size: 0.85rem; opacity: 0.5; }
-  .loc-edit:hover { opacity: 1; }
-  .loc-address { color: #777; font-size: 0.8rem; }
-  .loc-coords { color: #555; font-size: 0.75rem; }
-  .loc-categories { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem; }
-  .category-chip { background: #2a2a3e; color: #aaa; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.75rem; }
+  h2 { text-align: center; font-size: 1.75rem; font-weight: 700; color: #e0e0f0; margin-bottom: 2.5rem; }
 
-  .alerts-list { display: flex; flex-direction: column; gap: 0.5rem; }
-  .alert-item { padding: 0.9rem 1.1rem; }
-  .alert-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
-  .alert-icon { font-size: 1.1rem; }
-  .alert-title { flex: 1; font-size: 0.875rem; font-weight: 500; }
-  .alert-meta { display: flex; gap: 0.75rem; font-size: 0.775rem; color: #666; flex-wrap: wrap; }
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(160deg, #0d0d22 0%, #1a1a40 55%, #0f1a2e 100%);
+    text-align: center;
+    padding: 6rem 1.5rem 4.5rem;
+    border-bottom: 1px solid #252545;
+  }
+  .hero-inner { max-width: 700px; margin: 0 auto; }
+  .hero-badge {
+    display: inline-block; background: #1e1e3e; border: 1px solid #3a3a6a;
+    color: #9090c0; padding: 0.3rem 1rem; border-radius: 99px;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; margin-bottom: 1.75rem;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5vw, 3.25rem); font-weight: 800;
+    line-height: 1.15; color: #f0f0ff; margin-bottom: 1.35rem;
+  }
+  .hero-sub { color: #8888aa; font-size: 1.05rem; line-height: 1.75; max-width: 560px; margin: 0 auto 2.5rem; }
+  .hero-cta { display: flex; gap: 0.85rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .hero-hint { color: #50506a; font-size: 0.8rem; }
 
-  .error-box { background: #2a1a1a; border: 1px solid #5c2a2a; border-radius: 8px; padding: 1rem; color: #f87272; }
+  /* Buttons */
+  .btn-cta-primary {
+    background: #6366f1; color: #fff; padding: 0.8rem 2.1rem;
+    border-radius: 10px; font-weight: 600; font-size: 0.975rem;
+    display: inline-block; transition: background 0.15s, transform 0.1s;
+  }
+  .btn-cta-primary:hover { background: #5052d0; transform: translateY(-1px); color: #fff; }
+  .btn-cta-secondary {
+    background: transparent; border: 1px solid #353558; color: #8080a8;
+    padding: 0.8rem 1.6rem; border-radius: 10px; font-weight: 500;
+    font-size: 0.975rem; display: inline-block; transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-cta-secondary:hover { border-color: #6366f1; color: #a0a0f0; }
 
-  @media (max-width: 480px) {
-    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-    .stat-value { font-size: 1.5rem; }
-    .page-header { flex-direction: column; }
+  /* ── Features ── */
+  .features { background: #0c0c1e; border-bottom: 1px solid #1e1e35; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+  .feature-card {
+    background: #141428; border: 1px solid #222238; border-radius: 12px;
+    padding: 1.5rem; transition: border-color 0.2s;
+  }
+  .feature-card:hover { border-color: #45457a; }
+  .feature-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+  .feature-title { font-weight: 600; color: #c8c8ec; margin-bottom: 0.4rem; }
+  .feature-desc { color: #6a6a8a; font-size: 0.85rem; line-height: 1.55; }
+
+  /* ── How it works ── */
+  .how { background: #0f0f1a; border-bottom: 1px solid #1e1e35; }
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 1.75rem; }
+  .steps li { display: flex; align-items: flex-start; gap: 1.25rem; }
+  .step-num {
+    background: #6366f1; color: #fff; width: 2rem; height: 2rem;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85rem; flex-shrink: 0; margin-top: 0.1rem;
+  }
+  .steps strong { display: block; color: #e0e0f0; margin-bottom: 0.3rem; font-size: 0.975rem; }
+  .steps p { color: #6a6a8a; font-size: 0.875rem; line-height: 1.6; margin: 0; }
+
+  /* ── Sources ── */
+  .sources { background: #0c0c1e; border-bottom: 1px solid #1e1e35; }
+  .source-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-bottom: 1.25rem; }
+  .source-chip {
+    background: #181830; border: 1px solid #28284a; border-radius: 99px;
+    padding: 0.4rem 1.1rem; font-size: 0.875rem; color: #9090b8;
+    display: flex; align-items: center; gap: 0.45rem;
+  }
+  .sources-hint { color: #48486a; font-size: 0.85rem; }
+
+  /* ── CTA Bottom ── */
+  .cta-bottom { background: linear-gradient(160deg, #12122a 0%, #1a1a3e 100%); border-top: 1px solid #25254a; }
+  .cta-bottom p { color: #70709a; margin-bottom: 2rem; text-align: center; }
+
+  @media (max-width: 600px) {
+    .feature-grid { grid-template-columns: 1fr; }
+    section { padding: 3rem 1rem; }
+    h1 { font-size: 1.9rem; }
   }
 </style>

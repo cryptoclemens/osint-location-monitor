@@ -1,5 +1,5 @@
-# TASKS.md – OSInt Location Monitor
-**Version:** 0.6.0 | **Letzte Aktualisierung:** 2026-03-10
+# TASKS.md – OSInt Vacation
+**Version:** 0.7.0 | **Letzte Aktualisierung:** 2026-03-11
 
 ---
 
@@ -96,27 +96,37 @@
 
 ---
 
-## Milestone 7 – Landing Page & Self-Service-Onboarding
+## Milestone 7 – Landing Page & Self-Service-Onboarding ✅
 
-**Ziel:** Die App öffnet sich für neue Interessenten. Eine öffentliche Startseite erklärt OSInt, Nutzer können sich selbst registrieren, Telegram verknüpfen und eigene Orte anlegen – ohne dass Clemens jeden User manuell in Supabase anlegen muss.
+**Ziel:** Die App öffnet sich für neue Interessenten. Eine öffentliche Startseite erklärt OSInt Vacation, Nutzer können sich selbst registrieren, Telegram verknüpfen und eigene Orte anlegen – ohne dass Clemens jeden User manuell in Supabase anlegen muss.
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
-| 7.1 | Landing Page (`/`) – öffentlich, erklärt Was/Wie/Warum OSInt Monitor | ⬜ Open | 🔴 Must |
-| 7.2 | Nutzer-Registrierung aktivieren – Email + Passwort Self-Signup via Supabase Auth | ⬜ Open | 🔴 Must |
-| 7.3 | Login-Seite anpassen – Link zu „Noch kein Konto? Registrieren" | ⬜ Open | 🔴 Must |
-| 7.4 | Registrierungs-Seite (`/register`) – Email + Passwort + Bestätigungsmail | ⬜ Open | 🔴 Must |
-| 7.5 | Onboarding-Flow – nach erstem Login: Telegram-Bot verbinden + ersten Ort anlegen | ⬜ Open | 🟡 Should |
-| 7.6 | Telegram-Setup-Anleitung im Onboarding (Schritt-für-Schritt: Bot starten, Chat-ID ermitteln) | ⬜ Open | 🟡 Should |
-| 7.7 | E-Mail-Bestätigung konfigurieren (Supabase Email Templates anpassen) | ⬜ Open | 🟡 Should |
-| 7.8 | Passwort vergessen / Reset-Flow (`/reset-password`) | ⬜ Open | 🟢 Nice |
-| 7.9 | Landing Page: SEO-Optimierung (Open Graph, canonical, sitemap) | ⬜ Open | 🟢 Nice |
+| 7.1 | Landing Page (`/`) – öffentlich, erklärt Was/Wie/Warum + App-Umbenennung OSInt Monitor → OSInt Vacation | ✅ Done | 🔴 Must |
+| 7.2 | Nutzer-Registrierung aktivieren – Email + Passwort Self-Signup via Supabase Auth | ✅ Done | 🔴 Must |
+| 7.3 | Login-Seite anpassen – Link zu „Noch kein Konto? Registrieren" + „Passwort vergessen?" | ✅ Done | 🔴 Must |
+| 7.4 | Registrierungs-Seite (`/register`) – Email + Passwort + Bestätigungsmail | ✅ Done | 🔴 Must |
+| 7.5 | Onboarding-Flow – nach erstem Login: Telegram-Bot verbinden + ersten Ort anlegen | ✅ Done | 🟡 Should |
+| 7.6 | Telegram-Setup-Anleitung im Onboarding (Schritt-für-Schritt: Bot starten, Chat-ID ermitteln) | ✅ Done | 🟡 Should |
+| 7.7 | E-Mail-Bestätigung konfigurieren (Supabase Email Templates anpassen) | 🔄 User-Action – siehe M7 User-Actions unten | 🟡 Should |
+| 7.8 | Passwort vergessen / Reset-Flow (`/reset-password`) – 2-Step (E-Mail senden + neues PW setzen) | ✅ Done | 🟢 Nice |
+| 7.9 | Landing Page: SEO-Optimierung (Open Graph, canonical, sitemap) | ✅ Done (OG-Tags in +page.svelte) | 🟢 Nice |
+| 7.10 | Beschleunigung der Ladezeit – In-Memory-Cache (60 s TTL) für Locations, Alerts & Profile | ✅ Done | 🟡 Should |
+
+### M7 User-Actions (einmalig manuell durch Clemens)
+
+| Schritt | Beschreibung |
+|---|---|
+| A | **Supabase SQL-Migration ausführen** – Datei `docs/migration-0.7.0.sql` im Supabase SQL-Editor ausführen (fügt `onboarding_done`-Spalte hinzu + Backfill) |
+| B | **Self-Sign-Up aktivieren** – Supabase Dashboard → Authentication → Providers → Email → „Enable Sign Ups" einschalten |
+| C | **E-Mail-Template anpassen** – Supabase Dashboard → Authentication → Email Templates → „Confirm signup" → `redirectTo` auf deine Vercel-URL setzen |
+| D | **Git push** – `git push origin main` von deinem Mac, dann Vercel deployed automatisch |
 
 ### Architektur-Entscheidungen M7
 
-- **Routing:** `/` wird zur Landing Page (öffentlich). Dashboard wird nach `/dashboard` verschoben oder bleibt hinter Auth-Guard auf `/`.
-- **Supabase Self-Signup:** In Supabase Dashboard → Authentication → Providers → Email → „Enable Sign Ups" aktivieren.
-- **Onboarding:** Einmaliger Wizard nach erstem Login, der Telegram-Chat-ID und ersten Ort abfragt. State in `profiles.onboarding_done` (Boolean).
+- **Routing:** `/` ist die öffentliche Landing Page. Das Dashboard liegt auf `/dashboard` (auth-geschützt). Eingeloggte User werden von `/` automatisch zu `/dashboard` weitergeleitet.
+- **Supabase Self-Signup:** Muss in Supabase Dashboard → Authentication → Providers → Email → „Enable Sign Ups" aktiviert werden.
+- **Onboarding:** Einmaliger Wizard nach erstem Login, der Telegram-Chat-ID und ersten Ort abfragt. State in `profiles.onboarding_done` (Boolean). Redirect via `+layout.server.js`.
 
 ---
 

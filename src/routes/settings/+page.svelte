@@ -281,8 +281,8 @@
       <div class="info-grid">
         <div class="info-item">
           <div class="info-label">Version</div>
-          <div class="info-value">0.6.0</div>
-          <div class="info-sub">Milestone 6 – Testing & Deployment</div>
+          <div class="info-value">0.7.0</div>
+          <div class="info-sub">Milestone 7 – Landing Page & Onboarding</div>
         </div>
         <div class="info-item">
           <div class="info-label">Frontend</div>

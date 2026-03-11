@@ -1,6 +1,6 @@
 # DECISIONS.md – Architekturentscheidungen
-**Projekt:** OSInt Location Monitor
-**Version:** 0.6.0 | **Letzte Aktualisierung:** 2026-03-10
+**Projekt:** OSInt Vacation
+**Version:** 0.7.0 | **Letzte Aktualisierung:** 2026-03-11
 
 > Dieses Dokument hält alle relevanten Architektur- und Technologie-Entscheidungen fest.
 > Format: Datum · Entscheidung · Begründung · Alternativen (abgelehnt)
@@ -155,6 +155,100 @@
 **Alternativen:**
 - *GDELT:* Zu komplex, kein Geofencing → als spätere Erweiterung vorgemerkt
 - *NewsAPI.org:* Free Tier nur delayed (24h) → für Echtzeit ungeeignet → abgelehnt
+
+---
+
+### [2026-03-11] App-Umbenennung: OSInt Monitor → OSInt Vacation
+**Status:** Entschieden
+
+**Entscheidung:** Die App heißt ab M7 offiziell „OSInt Vacation". Alle UI-Texte, Manifest, Service Worker, HTML-Meta-Tags und die settings-Seite wurden aktualisiert.
+
+**Begründung:**
+- Der Name „OSInt Vacation" kommuniziert den Anwendungsfall klarer: Monitoring für Ferienorte/Reiseziele
+- „Location Monitor" klingt technisch, nicht nutzerfreundlich
+- Der neue Name ist einprägsam, SEO-freundlich und passt zum Onboarding-Flow
+
+**Alternativen:**
+- *OSInt Monitor behalten:* Zu generisch, kein klarer Bezug zur Zielgruppe → abgelehnt
+
+---
+
+### [2026-03-11] M7 Routing: Landing Page auf `/`, Dashboard auf `/dashboard`
+**Status:** Entschieden
+
+**Entscheidung:** Die öffentliche Landing Page liegt auf `/`. Das Dashboard, das Authentifizierung erfordert, wurde auf `/dashboard` verschoben. Eingeloggte User werden von `/` automatisch zu `/dashboard` weitergeleitet.
+
+**Begründung:**
+- SEO: Suchmaschinen indexieren `/` – eine öffentliche Landing Page statt einem Login-Wall ist besser
+- UX: Neue Besucher sehen Features und CTA, nicht sofort eine Passwortmaske
+- Bestehende Links auf `/` funktionieren dank Redirect weiterhin
+
+**Alternativen:**
+- *Dashboard bleibt auf `/`:* Kein SEO, keine Möglichkeit für öffentliche Landing Page → abgelehnt
+
+---
+
+### [2026-03-11] Self-Registration via Supabase signUp()
+**Status:** Entschieden
+
+**Entscheidung:** Neue User können sich selbst registrieren via `/register`. Supabase `signUp()` sendet eine Bestätigungs-E-Mail. Nach Bestätigung landet der User auf `/onboarding`.
+
+**Begründung:**
+- M7-Ziel: App öffnet sich für neue Interessenten ohne manuellen Eingriff durch Clemens
+- Supabase bietet E-Mail-Bestätigung out-of-the-box (kein eigener Mail-Server nötig)
+- `emailRedirectTo: /onboarding` leitet direkt in den Onboarding-Wizard
+
+**Alternativen:**
+- *Manuell User in Supabase anlegen:* Schlechte UX, nicht skalierbar → abgelehnt (war MVP-Kompromiss in M5)
+- *Magic Link statt Passwort:* Einfacher für User, aber inkompatibel mit Reset-Flow → für später vorgemerkt
+
+---
+
+### [2026-03-11] Onboarding-Wizard: 3-Step-Flow nach erstem Login
+**Status:** Entschieden
+
+**Entscheidung:** Nach der E-Mail-Bestätigung (und bei `onboarding_done = false`) wird der User zu `/onboarding` weitergeleitet. Schritte: (1) Willkommen, (2) Telegram-Bot verbinden, (3) Ersten Ort anlegen. State wird in `profiles.onboarding_done` gespeichert.
+
+**Begründung:**
+- Ohne Telegram Chat-ID funktionieren keine Alerts → Onboarding stellt sicher, dass die Grundkonfiguration vorhanden ist
+- Schritt-für-Schritt verhindert Überforderung neuer User
+- `onboarding_done = TRUE` wird nach Abschluss gesetzt – kein erneutes Zeigen
+
+**Alternativen:**
+- *Onboarding überspringen, sofort Dashboard:* User ohne Telegram sehen keine Alerts → schlechte First-Run-Experience → abgelehnt
+- *Onboarding als modale Dialoge im Dashboard:* Technisch komplexer, schwerer zu testen → abgelehnt
+
+---
+
+### [2026-03-11] Passwort-Reset: Client-seitiger Flow via supabase.auth.resetPasswordForEmail()
+**Status:** Entschieden
+
+**Entscheidung:** Der Reset-Flow läuft vollständig client-seitig auf `/reset-password`. Schritt 1: E-Mail eingeben → Reset-Link senden. Schritt 2: User klickt Link → landet mit `?code=` (PKCE) oder `#type=recovery` (implicit) zurück auf der Seite → `exchangeCodeForSession()` oder `onAuthStateChange('PASSWORD_RECOVERY')` → neues Passwort via `updateUser()`.
+
+**Begründung:**
+- Kein separater `/auth/callback`-Route nötig – die Reset-Seite ist ihr eigener Callback
+- Unterstützt beide Supabase-Auth-Flows (PKCE und implizit)
+- Der `onAuthStateChange` Listener ist die idiomatische Supabase-Lösung für PASSWORD_RECOVERY
+
+**Alternativen:**
+- *Eigener `/auth/callback` Route:* Standardansatz bei OAuth, aber für reinen E-Mail-Reset unnötig → abgelehnt
+
+---
+
+### [2026-03-11] Performance: In-Memory-Cache für Supabase-Abfragen (60 s TTL)
+**Status:** Entschieden
+
+**Entscheidung:** `getLocations()`, `getAlerts()` und `getProfile()` verwenden einen einfachen In-Memory-Cache mit 60-Sekunden-TTL in `$lib/supabase.js`. Mutationen (`createLocation`, `updateLocation`, `deleteLocation`, `setLocationCategories`, `updateProfile`) invalidieren den entsprechenden Cache-Eintrag automatisch.
+
+**Begründung:**
+- Supabase Free Tier: sparsamer Umgang mit API-Calls reduziert Latenz und schont das Kontingent
+- Bei Navigation zwischen Seiten (Dashboard → Locations → Dashboard) werden dieselben Daten mehrfach abgefragt ohne dass sich etwas geändert hat
+- In-Memory ist SSR-sicher (kein `window`/`sessionStorage`) und hat keinen Serialisierungs-Overhead
+
+**Alternativen:**
+- *sessionStorage:* JSON-Serialisierung, kein SSR-Support, cross-tab-Issues → abgelehnt
+- *SvelteKit Stores mit persist:* Overhead, komplexere Invalidierung → für später vorgemerkt
+- *SWR / React Query Pattern:* Overkill für diesen Use-Case → abgelehnt
 
 ---
 

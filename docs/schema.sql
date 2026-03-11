@@ -1,6 +1,7 @@
--- OSInt Location Monitor – Supabase Database Schema
--- Version: 0.6.0 | Created: 2026-03-10
+-- OSInt Vacation – Supabase Database Schema
+-- Version: 0.7.0 | Created: 2026-03-10 | Updated: 2026-03-11
 -- Run this in the Supabase SQL Editor to set up the database.
+-- For existing databases: see docs/migration-0.7.0.sql
 
 -- ─────────────────────────────────────────────
 -- USERS (handled by Supabase Auth, extended here)
@@ -9,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT,
   telegram_chat_id TEXT,
+  onboarding_done BOOLEAN DEFAULT FALSE,  -- Tracks if user has completed onboarding wizard
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
