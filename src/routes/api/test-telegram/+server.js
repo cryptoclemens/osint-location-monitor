@@ -14,12 +14,15 @@ import { json } from '@sveltejs/kit';
 // does NOT fail when TELEGRAM_BOT_TOKEN is absent at build time (e.g. on Vercel
 // before the env var is configured). The value is read at request time instead.
 import { env } from '$env/dynamic/private';
-const TELEGRAM_BOT_TOKEN = env.TELEGRAM_BOT_TOKEN;
 
 /** Maximum allowed chat ID length (Telegram IDs are numeric, max ~15 digits) */
 const MAX_CHAT_ID_LENGTH = 20;
 
 export const POST = async ({ request }) => {
+  // Read token inside the handler so $env/dynamic/private is evaluated per-request
+  // (not once at module load time, which may run before env vars are injected).
+  const TELEGRAM_BOT_TOKEN = env.TELEGRAM_BOT_TOKEN;
+
   // ── Parse + validate body ───────────────────────────────────────────
   let body;
   try {
@@ -40,7 +43,7 @@ export const POST = async ({ request }) => {
   // ── Check bot token ─────────────────────────────────────────────────
   if (!TELEGRAM_BOT_TOKEN) {
     console.error('[test-telegram] TELEGRAM_BOT_TOKEN is not configured.');
-    return json({ error: 'Telegram Bot nicht konfiguriert. Bitte TELEGRAM_BOT_TOKEN setzen.' }, { status: 503 });
+    return json({ error: 'Telegram Bot nicht konfiguriert. Bitte TELEGRAM_BOT_TOKEN in Vercel → Settings → Environment Variables setzen.' }, { status: 503 });
   }
 
   // ── Send test message via Telegram Bot API ──────────────────────────
@@ -82,13 +85,17 @@ export const POST = async ({ request }) => {
   if (!result.ok) {
     // Map common Telegram error codes to German user messages
     const tgCode = result.error_code;
+    const tgDesc = (result.description ?? '').toLowerCase();
     let userMsg;
-    if (tgCode === 400 && result.description?.includes('chat not found')) {
-      userMsg = 'Chat-ID nicht gefunden. Stelle sicher, dass du dem Bot zuerst eine Nachricht geschickt hast.';
+    if (tgCode === 404 || tgDesc.includes('not found')) {
+      // 404 = invalid bot token (Telegram: "Not Found")
+      userMsg = 'Bot-Token ungültig. Bitte den TELEGRAM_BOT_TOKEN über @BotFather prüfen und in Vercel korrekt setzen.';
+    } else if (tgCode === 400 && tgDesc.includes('chat not found')) {
+      userMsg = 'Chat-ID nicht gefunden. Schicke dem Bot zuerst eine Nachricht in Telegram (z.B. /start), dann erneut testen.';
     } else if (tgCode === 403) {
-      userMsg = 'Bot wurde vom Chat blockiert. Bitte blockiere @OSIntVacationBot nicht.';
+      userMsg = 'Bot wurde blockiert. Bitte entsperre den Bot in Telegram und versuche es erneut.';
     } else if (tgCode === 401) {
-      userMsg = 'Telegram-Bot nicht autorisiert. Bitte Token in den Einstellungen prüfen.';
+      userMsg = 'Bot-Token nicht autorisiert. Bitte Token über @BotFather neu generieren.';
     } else {
       userMsg = result.description ?? 'Testnachricht konnte nicht gesendet werden.';
     }
