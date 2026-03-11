@@ -66,7 +66,7 @@
 
   {#if user}
     <footer>
-      <p>OSInt Vacation v0.7.0 &mdash;
+      <p>OSInt Vacation v0.9.0 &mdash;
         <a href="https://github.com/cryptoclemens/osint-location-monitor" target="_blank">GitHub</a>
       </p>
     </footer>
