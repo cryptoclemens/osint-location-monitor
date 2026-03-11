@@ -1,6 +1,9 @@
 <script>
   // M8 (Tasks 8.3 + 8.6): Data is loaded server-side via +page.server.js.
   // M9 (Task 9.5): Pagination – initial 50 alerts + "Mehr laden" button.
+  // M10 (Task 10.5): Filter state persisted in sessionStorage.
+  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
   import { getAlerts, loadMoreAlerts } from '$lib/supabase.js';
 
   /** @type {import('./$types').PageData} */
@@ -17,10 +20,39 @@
   // True when there are more alerts in the database than currently loaded
   $: hasMore = alerts.length < totalCount;
 
-  // Filters
+  // Filters – defaults match the original hard-coded values.
+  // Restored from sessionStorage in onMount (Task 10.5).
+  const FILTER_KEY = 'alerts-filter';
   let filterCategory = 'all';
   let filterSeverity = 'all';
   let filterDays = '7';
+
+  // ── sessionStorage persistence (Task 10.5) ─────────────────────────
+  // Restore filter state on mount so filters survive navigation.
+  onMount(() => {
+    if (!browser) return;
+    try {
+      const stored = sessionStorage.getItem(FILTER_KEY);
+      if (stored) {
+        const saved = JSON.parse(stored);
+        if (saved.filterCategory) filterCategory = saved.filterCategory;
+        if (saved.filterSeverity) filterSeverity = saved.filterSeverity;
+        if (saved.filterDays)     filterDays     = saved.filterDays;
+      }
+    } catch {
+      // sessionStorage not available (private mode) – silently ignore
+    }
+  });
+
+  // Save filters to sessionStorage whenever they change.
+  // browser guard prevents SSR errors.
+  $: if (browser) {
+    try {
+      sessionStorage.setItem(FILTER_KEY, JSON.stringify({ filterCategory, filterSeverity, filterDays }));
+    } catch {
+      // ignore
+    }
+  }
 
   // Category + Severity definitions
   const CATEGORIES = [
@@ -129,6 +161,10 @@
     filterCategory = 'all';
     filterSeverity = 'all';
     filterDays = '7';
+    // Also clear the persisted state so next visit starts fresh
+    if (browser) {
+      try { sessionStorage.removeItem(FILTER_KEY); } catch { /* ignore */ }
+    }
   }
 
   $: hasActiveFilters = filterCategory !== 'all' || filterSeverity !== 'all' || filterDays !== '7';
