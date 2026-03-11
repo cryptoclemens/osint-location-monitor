@@ -1,6 +1,6 @@
 {
   "name": "osint-location-monitor",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": false,
   "description": "PWA to monitor public information at European locations and send Telegram alerts for critical events.",
   "author": "Clemens Pompeÿ",
@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "bump": "node scripts/bump-version.js"
   },
   "devDependencies": {
     "@sveltejs/adapter-vercel": "^5.0.0",

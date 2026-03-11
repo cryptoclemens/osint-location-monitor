@@ -1,5 +1,5 @@
 # BRIEF.md – OSInt Vacation
-**Version:** 0.9.0
+**Version:** 0.10.1
 **Erstellt:** 2026-03-10 | **Aktualisiert:** 2026-03-11
 **Autor:** Clemens Pompeÿ
 

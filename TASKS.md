@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Vacation
-**Version:** 1.0.0 | **Letzte Aktualisierung:** 2026-03-11
+**Version:** 0.10.1 | **Letzte Aktualisierung:** 2026-03-11
 
 ---
 
@@ -231,7 +231,7 @@
 | # | Task | Status | Priorität |
 |---|---|---|---|
 | 10.3 | **Passwort-Reset als Server Action** – `reset-password/+page.svelte` analog zu `register` auf `+page.server.js`-Action umstellen + deutsche Fehlermeldungen via `toGermanAuthError()` | ⬜ Open | 🟡 Should |
-| 10.4 | **Automatische Version in Commit-Message** – `package.json`-Version bei jedem Bump automatisch in `BRIEF.md` + `TASKS.md` einpflegen (z.B. via pre-commit Hook oder kleines Script) | ⬜ Open | 🟡 Should |
+| 10.4 | **Auto-Version-Script** – `scripts/bump-version.js` bumpt `package.json` und aktualisiert `BRIEF.md` + `TASKS.md` mit neuem Datum. Via `npm run bump -- patch/minor/major`. | ✅ Done | 🟡 Should |
 | 10.5 | **Alerts-Filter persistent machen** – Gewählte Filter (Zeitraum, Kategorie, Schweregrad) im `sessionStorage` speichern, sodass sie nach Navigation erhalten bleiben | ⬜ Open | 🟡 Should |
 | 10.6 | **Toast-Notifications** – Ersetze reine Error-Banner durch kurze In-App-Toasts (z.B. „✅ Ort gespeichert", „⚠️ Fehler beim Laden") für besseres Feedback | ⬜ Open | 🟡 Should |
 
