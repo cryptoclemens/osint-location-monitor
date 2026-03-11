@@ -1,20 +1,19 @@
-// alerts/+page.server.js – Server-side data loading (M8 – Task 8.3)
+// alerts/+page.server.js – Server-side data loading (M9 – Task 9.5 Pagination)
 //
-// Provides the initial alert list via SSR, replacing the onMount fetch.
-// The "Aktualisieren" button still triggers a client-side refresh via loadAlerts().
-// Limit: 200 – matches the previous onMount call and is sufficient for the
-// filter/stats calculations on this page.
+// Loads the first 50 alerts with an exact total count so the client can
+// offer a "Mehr laden" button without fetching everything upfront.
 // RLS automatically filters results to the authenticated user's data.
 
 export const load = async ({ locals }) => {
-  const { data, error } = await locals.supabase
+  const { data, error, count } = await locals.supabase
     .from('alerts')
-    .select('*, locations(name)')
+    .select('*, locations(name)', { count: 'exact' })
     .order('created_at', { ascending: false })
-    .limit(200);
+    .limit(50);
 
   return {
-    alerts:    data  ?? [],
-    loadError: error?.message ?? null,
+    alerts:     data        ?? [],
+    totalCount: count       ?? 0,
+    loadError:  error?.message ?? null,
   };
 };

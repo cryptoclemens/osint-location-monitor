@@ -1,5 +1,5 @@
 # BRIEF.md – OSInt Vacation
-**Version:** 0.8.0
+**Version:** 0.9.0
 **Erstellt:** 2026-03-10 | **Aktualisiert:** 2026-03-11
 **Autor:** Clemens Pompeÿ
 
@@ -37,7 +37,8 @@ Zusätzlich erhalten Nutzer täglich um 09:00 Uhr einen Morgenbericht mit aktuel
 | M5 – Auth | Supabase Auth (Email/Passwort), Login, Route Guards, RLS | ✅ Fertig |
 | M6 – Deployment | Vercel-Deploy, E2E-Tests, Service Worker, Lighthouse-Config | ✅ Fertig |
 | M7 – Onboarding | Landing Page, Self-Signup, Onboarding-Wizard, Passwort-Reset | ✅ Fertig |
-| M8 – Performance | Server-side Loading, Supabase Keep-Alive, Cache-Optimierungen | ⬜ Geplant |
+| M8 – Performance | Server-side Loading, Supabase Keep-Alive, Cache-Optimierungen | ✅ Fertig |
+| M9 – Sicherheit & Qualität | Rate Limiting, Security-Header, Pagination, Tests, Komponenten | ✅ Fertig |
 
 ### Was heute funktioniert (Live auf Vercel)
 

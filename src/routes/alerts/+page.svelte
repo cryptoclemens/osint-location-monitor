@@ -1,16 +1,21 @@
 <script>
   // M8 (Tasks 8.3 + 8.6): Data is loaded server-side via +page.server.js.
-  // The manual "Aktualisieren" button still triggers a client-side loadAlerts().
-  import { getAlerts } from '$lib/supabase.js';
+  // M9 (Task 9.5): Pagination – initial 50 alerts + "Mehr laden" button.
+  import { getAlerts, loadMoreAlerts } from '$lib/supabase.js';
 
   /** @type {import('./$types').PageData} */
   export let data;
 
   // ── State ──────────────────────────────────────────────────────────
   // loading starts false – initial data comes from SSR
-  let alerts  = data.alerts;
-  let loading = false;
-  let error   = data.loadError ?? null;
+  let alerts     = data.alerts;
+  let totalCount = data.totalCount ?? alerts.length;
+  let loading    = false;
+  let loadingMore = false;
+  let error      = data.loadError ?? null;
+
+  // True when there are more alerts in the database than currently loaded
+  $: hasMore = alerts.length < totalCount;
 
   // Filters
   let filterCategory = 'all';
@@ -41,16 +46,36 @@
     { value: '90',  label: 'Letzte 90 Tage' },
   ];
 
-  // loadAlerts() – called by the "Aktualisieren" button for manual refresh
+  // loadAlerts() – called by the "Aktualisieren" button for manual refresh.
+  // Resets to first 50 to stay consistent with SSR initial state.
   async function loadAlerts() {
     loading = true;
     error = null;
     try {
-      alerts = await getAlerts(200);
+      // getAlerts(50) uses the cached query; force fresh by using loadMoreAlerts at offset 0
+      const fresh = await loadMoreAlerts(0, 50);
+      alerts = fresh;
+      // Refetch totalCount separately so hasMore stays accurate after a refresh
+      // (We re-use the SSR count as a baseline; a full refresh will reconcile on next SSR)
+      if (fresh.length < 50) totalCount = fresh.length;
     } catch (e) {
       error = e.message;
     } finally {
       loading = false;
+    }
+  }
+
+  // loadMore() – appends the next batch of alerts when the user clicks "Mehr laden"
+  async function loadMore() {
+    loadingMore = true;
+    error = null;
+    try {
+      const batch = await loadMoreAlerts(alerts.length, 50);
+      alerts = [...alerts, ...batch];
+    } catch (e) {
+      error = e.message;
+    } finally {
+      loadingMore = false;
     }
   }
 
@@ -138,7 +163,7 @@
   {#if !loading}
     <div class="stats-row">
       <div class="stat-card">
-        <div class="stat-value">{alerts.length}</div>
+        <div class="stat-value">{totalCount}</div>
         <div class="stat-label">Alerts gesamt</div>
       </div>
       <div class="stat-card">
@@ -195,8 +220,9 @@
   <!-- Result count -->
   {#if !loading && alerts.length > 0}
     <p class="result-count">
-      {filteredAlerts.length} von {alerts.length} Alerts
+      {filteredAlerts.length} von {totalCount} Alerts
       {#if hasActiveFilters}(gefiltert){/if}
+      {#if alerts.length < totalCount} – {alerts.length} geladen{/if}
     </p>
   {/if}
 
@@ -274,6 +300,23 @@
         </div>
       {/each}
     </div>
+
+    <!-- "Mehr laden" pagination button (M9 – Task 9.5) -->
+    {#if hasMore && !hasActiveFilters}
+      <div class="load-more-row">
+        <button
+          class="btn btn-secondary"
+          on:click={loadMore}
+          disabled={loadingMore}
+        >
+          {#if loadingMore}
+            <span class="spinner-inline"></span> Lade…
+          {:else}
+            ⬇ Mehr laden ({totalCount - alerts.length} weitere)
+          {/if}
+        </button>
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -487,6 +530,24 @@
   .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid transparent; }
   .btn-ghost:hover { color: var(--text); border-color: var(--border); }
   .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+
+  /* ── Load More ───────────────────────────────────────────── */
+  .load-more-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+
+  .spinner-inline {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 0.35rem;
+  }
 
   /* ── Alert Banner ────────────────────────────────────────── */
   .alert-banner {

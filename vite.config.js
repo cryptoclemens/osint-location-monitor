@@ -40,4 +40,18 @@ export default defineConfig({
     serverHooksBrowserShim(), // must be before sveltekit()
     sveltekit(),
   ],
+  test: {
+    // Vitest configuration (M9 – Task 9.9)
+    // Only runs tests for pure-JS utility files (no Svelte component rendering).
+    // SvelteKit virtual modules ($env/*) are stubbed via `resolve.alias` below.
+    include:     ['src/**/*.{test,spec}.{js,ts}'],
+    environment: 'node',
+    alias: {
+      '$env/static/public':  path.resolve('./src/test/__mocks__/env-public.js'),
+      '$env/static/private': path.resolve('./src/test/__mocks__/env-private.js'),
+      '$app/navigation':     path.resolve('./src/test/__mocks__/app-navigation.js'),
+      '$app/forms':          path.resolve('./src/test/__mocks__/app-forms.js'),
+      '$app/stores':         path.resolve('./src/test/__mocks__/app-stores.js'),
+    },
+  },
 });

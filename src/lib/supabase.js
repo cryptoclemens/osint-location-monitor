@@ -151,6 +151,23 @@ export async function getAlerts(limit = 50) {
   });
 }
 
+/**
+ * Load a batch of alerts at a given offset (M9 – Task 9.5 Pagination).
+ * Not cached – offset-based queries are request-specific and must always be fresh.
+ *
+ * @param {number} offset - Number of records to skip
+ * @param {number} limit  - Number of records per batch (default: 50)
+ */
+export async function loadMoreAlerts(offset, limit = 50) {
+  const { data, error } = await supabase
+    .from('alerts')
+    .select('*, locations(name)')
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+  if (error) throw error;
+  return data ?? [];
+}
+
 // ── User Profile ───────────────────────────────────────────
 
 /**
@@ -189,26 +206,50 @@ export async function updateProfile(updates) {
 // ── Geocoding (Nominatim / OpenStreetMap) ─────────────────
 
 /**
- * Geocode a free-text address using Nominatim.
- * Returns { lat, lon, display_name, country_code } or null.
+ * Geocode a free-text address using Nominatim (OpenStreetMap).
+ * Returns { lat, lon, display_name, country_code } or null if not found.
+ *
+ * M9 (Task 9.2): Added 8-second AbortController timeout to prevent hanging
+ * requests from blocking the UI indefinitely.
+ *
+ * @param {string} address  - Free-text address to geocode
+ * @param {number} timeoutMs - Request timeout in milliseconds (default: 8 000)
  */
-export async function geocodeAddress(address) {
+export async function geocodeAddress(address, timeoutMs = 8_000) {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=5&addressdetails=1`;
-  const res = await fetch(url, {
-    headers: {
-      'Accept-Language': 'de,en',
-      'User-Agent': 'OSInt-Vacation/1.0'
+
+  // AbortController allows us to cancel the fetch after `timeoutMs`
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  let res;
+  try {
+    res = await fetch(url, {
+      headers: {
+        'Accept-Language': 'de,en',
+        'User-Agent': 'OSInt-Vacation/1.0',
+      },
+      signal: controller.signal,
+    });
+  } catch (e) {
+    if (e?.name === 'AbortError') {
+      throw new Error('Geocoding-Zeitüberschreitung (8 s). Bitte Internetverbindung prüfen.');
     }
-  });
-  if (!res.ok) throw new Error('Geocoding-Anfrage fehlgeschlagen');
+    throw new Error('Geocoding-Anfrage fehlgeschlagen: ' + (e?.message ?? String(e)));
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (!res.ok) throw new Error(`Geocoding-Fehler (HTTP ${res.status})`);
+
   const results = await res.json();
   if (!results || results.length === 0) return null;
 
   const r = results[0];
   return {
-    lat: parseFloat(r.lat),
-    lon: parseFloat(r.lon),
+    lat:          parseFloat(r.lat),
+    lon:          parseFloat(r.lon),
     display_name: r.display_name,
-    country_code: r.address?.country_code?.toUpperCase() ?? ''
+    country_code: r.address?.country_code?.toUpperCase() ?? '',
   };
 }

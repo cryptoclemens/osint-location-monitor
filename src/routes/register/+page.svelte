@@ -1,65 +1,19 @@
 <!-- /register – Self-service registration page -->
+<!-- M9 (Task 9.6): Converted to SvelteKit server action + use:enhance for
+     progressive enhancement. Rate limiting is handled by hooks.server.js. -->
 <script>
-  import { supabase } from '$lib/supabase.js';
-  import { goto } from '$app/navigation';
-  // PUBLIC_SITE_URL is set in .env.local / Vercel env vars.
-  // It must match the "Site URL" in Supabase Dashboard → Authentication → URL Configuration.
-  import { PUBLIC_SITE_URL } from '$env/static/public';
+  import { enhance } from '$app/forms';
 
-  let email    = '';
-  let password = '';
-  let passwordConfirm = '';
+  /** @type {import('./$types').ActionData} */
+  export let form;
+
+  // Preserve email across form re-renders so users don't have to retype it.
+  let email    = form?.email ?? '';
   let loading  = false;
-  let error    = null;
-  let success  = false; // email confirmation sent
 
-  async function handleRegister() {
-    error = null;
-
-    // Client-side validation
-    if (!email.trim() || !password) {
-      error = 'E-Mail und Passwort sind Pflichtfelder.';
-      return;
-    }
-    if (password.length < 8) {
-      error = 'Das Passwort muss mindestens 8 Zeichen lang sein.';
-      return;
-    }
-    if (password !== passwordConfirm) {
-      error = 'Die Passwörter stimmen nicht überein.';
-      return;
-    }
-
-    loading = true;
-    try {
-      const { data, error: sbError } = await supabase.auth.signUp({
-        email:    email.trim(),
-        password: password,
-        options: {
-          // After confirmation the user lands on /onboarding
-          // Use the explicit site URL from env vars so Supabase honors it.
-          // Falls back to the current origin for resilience (e.g. local dev
-          // without the env var set).
-          emailRedirectTo: `${PUBLIC_SITE_URL || window.location.origin}/onboarding`,
-        },
-      });
-
-      if (sbError) throw sbError;
-
-      // Supabase returns a user even if email confirmation is required
-      // If identities is empty, the email is already registered
-      if (data.user && data.user.identities?.length === 0) {
-        error = 'Diese E-Mail-Adresse ist bereits registriert. Bitte anmelden.';
-        return;
-      }
-
-      success = true;
-    } catch (e) {
-      error = e.message ?? 'Registrierung fehlgeschlagen.';
-    } finally {
-      loading = false;
-    }
-  }
+  // form.success is set by the server action on successful sign-up
+  $: success = form?.success === true;
+  $: error   = form?.error   ?? null;
 </script>
 
 <svelte:head>
@@ -80,7 +34,7 @@
         <div class="success-icon">📧</div>
         <h1>Fast geschafft!</h1>
         <p>
-          Wir haben eine Bestätigungs-E-Mail an <strong>{email}</strong> gesendet.
+          Wir haben eine Bestätigungs-E-Mail an <strong>{form.email}</strong> gesendet.
           Klicke auf den Link in der E-Mail, um dein Konto zu aktivieren.
         </p>
         <p class="hint">Kein E-Mail erhalten? Prüfe deinen Spam-Ordner.</p>
@@ -90,17 +44,32 @@
     {:else}
       <!-- ── Registration form ── -->
       <h1>Konto erstellen</h1>
-      <p class="subtitle">Kostenlos registrieren – kein Abo, kein Kreditkarte.</p>
+      <p class="subtitle">Kostenlos registrieren – kein Abo, keine Kreditkarte.</p>
 
       {#if error}
         <div class="error-banner">⚠️ {error}</div>
       {/if}
 
-      <form on:submit|preventDefault={handleRegister}>
+      <!--
+        action="?/register" → calls the "register" action in +page.server.js
+        use:enhance        → progressive enhancement (spinner + no full reload)
+      -->
+      <form
+        method="POST"
+        action="?/register"
+        use:enhance={() => {
+          loading = true;
+          return async ({ update }) => {
+            loading = false;
+            await update();
+          };
+        }}
+      >
         <div class="form-group">
           <label for="email">E-Mail</label>
           <input
             id="email"
+            name="email"
             type="email"
             bind:value={email}
             placeholder="deine@email.de"
@@ -114,8 +83,8 @@
           <label for="password">Passwort <span class="hint-inline">(mind. 8 Zeichen)</span></label>
           <input
             id="password"
+            name="password"
             type="password"
-            bind:value={password}
             placeholder="••••••••"
             autocomplete="new-password"
             required
@@ -127,8 +96,8 @@
           <label for="password-confirm">Passwort bestätigen</label>
           <input
             id="password-confirm"
+            name="passwordConfirm"
             type="password"
-            bind:value={passwordConfirm}
             placeholder="••••••••"
             autocomplete="new-password"
             required
@@ -184,6 +153,21 @@
   .form-group { margin-bottom: 1.1rem; }
   label { display: block; font-size: 0.875rem; color: #aaa; margin-bottom: 0.4rem; }
   .hint-inline { color: #555; font-size: 0.78rem; }
+
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    background: #0e0e1a;
+    border: 1px solid #2a2a3e;
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    color: #e0e0f0;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+  }
+  input:focus { outline: none; border-color: #6366f1; }
+  input:disabled { opacity: 0.5; }
 
   .btn-submit {
     width: 100%; background: #6366f1; color: #fff; border: none;
