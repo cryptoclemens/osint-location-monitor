@@ -10,7 +10,11 @@
 // Used by: /onboarding (Step 2 – verify Telegram connection before saving)
 
 import { json } from '@sveltejs/kit';
-import { TELEGRAM_BOT_TOKEN } from '$env/static/private';
+// Use $env/dynamic/private instead of $env/static/private so the build
+// does NOT fail when TELEGRAM_BOT_TOKEN is absent at build time (e.g. on Vercel
+// before the env var is configured). The value is read at request time instead.
+import { env } from '$env/dynamic/private';
+const TELEGRAM_BOT_TOKEN = env.TELEGRAM_BOT_TOKEN;
 
 /** Maximum allowed chat ID length (Telegram IDs are numeric, max ~15 digits) */
 const MAX_CHAT_ID_LENGTH = 20;
