@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Vacation
-**Version:** 0.9.0 | **Letzte Aktualisierung:** 2026-03-11
+**Version:** 0.9.1 | **Letzte Aktualisierung:** 2026-03-11
 
 ---
 
@@ -148,6 +148,7 @@
 | 8.5 | `onboarding_done`-Cookie-Cache in `+layout.server.js` – nach erstem Check Cookie setzen, Folge-Requests lesen Cookie statt DB | ⬜ Open | 🟡 Should |
 | 8.6 | Svelte-Seiten anpassen – `onMount`-Datenfetching durch `data`-Prop aus `load()` ersetzen (Dashboard, Locations, Alerts) | ⬜ Open | 🔴 Must |
 | 8.7 | DECISIONS.md + TASKS.md aktualisieren + Commit + Push | ⬜ Open | 🔴 Must |
+| 8.8 | **Visuelles Loading-State-Alignment** – Dashboard zeigt „⏳ Lade Daten…" als kleinen Inline-Text (oben, nicht zentriert); Locations-Seite zeigt zentrierten Spinner mit Text unterhalb. Dashboard-Loading-State angleichen: zentrierter Kreis-Spinner analog zur `locations/+page.svelte`-Darstellung (gleiche Proportionen, gleiche vertikale Zentrierung) | ⬜ Open | 🟡 Should |
 
 ### Erwartetes Ergebnis nach M8
 
