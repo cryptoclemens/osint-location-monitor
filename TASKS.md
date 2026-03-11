@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Vacation
-**Version:** 0.8.0 | **Letzte Aktualisierung:** 2026-03-11
+**Version:** 0.9.0 | **Letzte Aktualisierung:** 2026-03-11
 
 ---
 
@@ -156,6 +156,56 @@
 | Supabase warm (normale Nutzung) | ~3–10 s | < 1 s (Daten im initialen HTML) |
 | Supabase kalt (nach Inaktivität) | 3+ Minuten | < 30 s (Keep-Alive verhindert Pause; falls doch kalt: Server-SSR puffert den Warte-Request) |
 | Navigation zwischen Seiten | ~3–5 s pro Seite | < 1 s (In-Memory-Cache aus M7 greift) |
+
+---
+
+## Milestone 9 – Sicherheit & Code-Qualität ⬜
+
+**Ziel:** Die App vor dem öffentlichen Launch absichern. Ergebnis eines vollständigen Code-Reviews (2026-03-11) mit Fokus auf Sicherheit, Performance-Engpässe, Code-Qualität und Fehlerbehandlung.
+
+### 🔴 Kritisch – vor dem öffentlichen Launch
+
+| # | Task | Status | Priorität |
+|---|---|---|---|
+| 9.1 | **Rate Limiting** – `/register`, `/reset-password` und Geocoding-Endpoint gegen Missbrauch absichern (z. B. Supabase-seitiger Schutz + client-seitiger Debounce auf Geocoding) | ⬜ Open | 🔴 Must |
+| 9.2 | **Geocoding-Timeout** – `geocodeAddress()` in `supabase.js` mit 8-Sekunden-Timeout absichern (analog zum 10-s-Timeout in `loadLocations()`) | ⬜ Open | 🔴 Must |
+| 9.3 | **Supabase RLS-Audit** – Manuelle Prüfung aller Row-Level-Security-Policies im Supabase Dashboard; sicherstellen, dass kein User Daten anderer User lesen/schreiben kann | ⬜ Open | 🔴 Must |
+| 9.4 | **Service-Key-Prüfung** – Verifizieren, dass `SUPABASE_SERVICE_KEY` nicht in Vercel-Env-Vars landet und nicht im Frontend-Bundle auftaucht (`.gitignore`, Vercel-Dashboard-Check) | ⬜ Open | 🔴 Must |
+
+### 🟡 Empfohlen – innerhalb der nächsten Sprints
+
+| # | Task | Status | Priorität |
+|---|---|---|---|
+| 9.5 | **Alerts Pagination** – Alerts-Seite lädt aktuell alle Einträge auf einmal; Infinite Scroll oder „Mehr laden"-Button implementieren (max. 50 pro Batch) | ⬜ Open | 🟡 Should |
+| 9.6 | **Register als Server Action** – `/register` nutzt aktuell direkten Client-Supabase-Call; auf `+page.server.js`-Action umstellen (konsistent mit Login) | ⬜ Open | 🟡 Should |
+| 9.7 | **Security-Header in `vercel.json`** – `Content-Security-Policy`, `X-Frame-Options`, `Referrer-Policy` und `Permissions-Policy` explizit konfigurieren | ⬜ Open | 🟡 Should |
+| 9.8 | **`locations/+page.svelte` aufteilen** – 790 Zeilen in separate Komponenten extrahieren: `LocationModal.svelte`, `LocationList.svelte`, `LocationForm.svelte` | ⬜ Open | 🟡 Should |
+| 9.9 | **Basis-Unit-Tests mit Vitest** – Testabdeckung für `withCache()`, `invalidateCache()`, `geocodeAddress()` und `setLocationCategories()` in `$lib/supabase.js` | ⬜ Open | 🟡 Should |
+| 9.10 | **Deutsche Fehlermeldungen** – Supabase-Rohfehlermeldungen (englisch) in `register/+page.svelte` und `reset-password/+page.svelte` auf Deutsch mappen | ⬜ Open | 🟡 Should |
+
+### 🟢 Optional – Nice to have
+
+| # | Task | Status | Priorität |
+|---|---|---|---|
+| 9.11 | **Error Tracking** – Sentry Free Tier integrieren für Produktionsfehler-Monitoring | ⬜ Open | 🟢 Nice |
+| 9.12 | **Offline-UX verbessern** – "Du bist offline"-Banner wenn Supabase-Calls fehlschlagen; Service Worker offline-Page aufwerten | ⬜ Open | 🟢 Nice |
+| 9.13 | **JSDoc-Typen** – Alle öffentlichen Funktionen in `supabase.js` mit JSDoc-Typen annotieren (Vorstufe zu TypeScript) | ⬜ Open | 🟢 Nice |
+| 9.14 | **TypeScript-Migration** – Schrittweise Migration der `.svelte`- und `.js`-Dateien auf TypeScript | ⬜ Open | 🟢 Nice |
+
+### Review-Ergebnis Zusammenfassung
+
+| Bereich | Befund | Risiko |
+|---|---|---|
+| Authentifizierung & Sessions | Korrekt implementiert via `@supabase/ssr` + `getUser()` | ✅ Sicher |
+| Eingabe-Validierung & XSS | Svelte auto-escaped, Supabase parametrisiert | ✅ Sicher |
+| Rate Limiting | Fehlt komplett auf Register + Reset + Geocoding | 🔴 Kritisch |
+| RLS-Policies | Korrekt im Schema definiert – Produktiv-Prüfung ausstehend | 🟡 Offen |
+| Supabase Service Key | Korrekt nur in GitHub Actions – Prüfung empfohlen | 🟡 Offen |
+| Code-Struktur | `locations/+page.svelte` 790 Zeilen, Modal nicht extrahiert | 🟡 Mittel |
+| Testabdeckung | 0% – keine Tests vorhanden | 🟡 Mittel |
+| Fehlerbehandlung | Englische Supabase-Meldungen im deutschen UI | 🟢 Gering |
+| Bundle-Größe | Minimal, keine unnötigen Dependencies | ✅ Gut |
+| PWA/Service Worker | Korrekt implementiert, Offline-UX verbesserbar | ✅ Gut |
 
 ---
 
