@@ -1,16 +1,17 @@
 <!-- /reset-password – Two-step password reset flow
-     Step 1: User enters email → Supabase sends reset link
+     Step 1: User enters email → Server Action sends reset link (server-side, M10 Task 10.3)
      Step 2: User clicks link in email → lands here with ?code= or #type=recovery
-             → enters new password → saved via supabase.auth.updateUser()
+             → enters new password → saved via supabase.auth.updateUser() (client-side)
 -->
 <script>
   import { supabase } from '$lib/supabase.js';
   import { goto } from '$app/navigation';
   import { onMount, onDestroy } from 'svelte';
-  // Use $env/dynamic/public so the build doesn't fail when PUBLIC_SITE_URL is
-  // absent at build time. The value is read at runtime in the browser.
-  import { env } from '$env/dynamic/public';
-  const PUBLIC_SITE_URL = env.PUBLIC_SITE_URL ?? '';
+  import { enhance } from '$app/forms';
+
+  // ── Server Action result (Step 1) ──────────────────────────
+  // Populated by SvelteKit when the sendResetEmail action returns data or fail().
+  export let form;
 
   // ── State ─────────────────────────────────────────────────
   // 'request'  → show email input (initial state)
@@ -62,24 +63,27 @@
     authListener?.data?.subscription?.unsubscribe();
   });
 
-  // ── Step 1: Request reset email ──────────────────────────
-  async function handleRequest() {
-    error   = null;
-    if (!email.trim()) { error = 'Bitte gib deine E-Mail-Adresse ein.'; return; }
-
+  // ── Step 1: Enhance handler for server action ───────────
+  // Progressive enhancement: form posts to ?/sendResetEmail server action.
+  // On success the server returns { sent: true, email }; on failure { error }.
+  function handleResetEnhance({ formData }) {
     loading = true;
-    try {
-      const { error: sbErr } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        // Explicit site URL so Supabase uses the production domain.
-        redirectTo: `${PUBLIC_SITE_URL || window.location.origin}/reset-password`,
-      });
-      if (sbErr) throw sbErr;
-      step = 'sent';
-    } catch (e) {
-      error = e.message ?? 'Anfrage fehlgeschlagen. Bitte versuche es erneut.';
-    } finally {
+    error   = null;
+    email   = formData.get('email') ?? '';
+
+    return async ({ result }) => {
       loading = false;
-    }
+      if (result.type === 'success' && result.data?.sent) {
+        // Server confirmed: email dispatched (or silently accepted for unknown address)
+        email = result.data.email ?? email;
+        step  = 'sent';
+      } else if (result.type === 'failure') {
+        error = result.data?.error ?? 'Anfrage fehlgeschlagen. Bitte versuche es erneut.';
+      } else {
+        // Unexpected result type – show generic error
+        error = 'Unbekannter Fehler. Bitte die Seite neu laden.';
+      }
+    };
   }
 
   // ── Step 2: Save new password ────────────────────────────
@@ -125,7 +129,7 @@
         <div class="error-banner">⚠️ {error}</div>
       {/if}
 
-      <form on:submit|preventDefault={handleRequest}>
+      <form method="POST" action="?/sendResetEmail" use:enhance={handleResetEnhance}>
         <div class="form-group">
           <label for="email">E-Mail-Adresse</label>
           <input
