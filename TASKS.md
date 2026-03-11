@@ -210,6 +210,38 @@
 
 ---
 
+---
+
+## Milestone 10 – Polish & Developer Experience ⬜
+
+**Ziel:** Letzte Feinschliffe vor einem stabilen v1.0.0-Release. Fokus auf Wartbarkeit, Transparenz (für potenzielle Nutzer/Contributor) und den letzten UX-Verbesserungen.
+
+### 🔴 Kritisch
+
+| # | Task | Status | Priorität |
+|---|---|---|---|
+| 10.0 | **Dynamische Versionsnummer** – Hartcodierte Version-Strings in `+layout.svelte` (Footer) und `settings/+page.svelte` durch `import { version } from '$app/environment'` ersetzen. SvelteKit liest `version` automatisch aus `package.json` – nie mehr vergessen zu aktualisieren. | ⬜ Open | 🔴 Must |
+| 10.1 | **README.md aktualisieren** – App-Name, Live-URL, Screenshots, korrekte Projektstruktur, Milestone-Übersicht, `npm test`-Befehl. README spiegelt v0.9.0-Stand wider. | ✅ Done | 🔴 Must |
+
+### 🟡 Empfohlen
+
+| # | Task | Status | Priorität |
+|---|---|---|---|
+| 10.2 | **Passwort-Reset als Server Action** – `reset-password/+page.svelte` analog zu `register` auf `+page.server.js`-Action umstellen + deutsche Fehlermeldungen via `toGermanAuthError()` | ⬜ Open | 🟡 Should |
+| 10.3 | **Automatische Version in Commit-Message** – `package.json`-Version bei jedem Bump automatisch in `BRIEF.md` + `TASKS.md` einpflegen (z.B. via pre-commit Hook oder kleines Script) | ⬜ Open | 🟡 Should |
+| 10.4 | **Alerts-Filter persistent machen** – Gewählte Filter (Zeitraum, Kategorie, Schweregrad) im `sessionStorage` speichern, sodass sie nach Navigation erhalten bleiben | ⬜ Open | 🟡 Should |
+| 10.5 | **Toast-Notifications** – Ersetze reine Error-Banner durch kurze In-App-Toasts (z.B. „✅ Ort gespeichert", „⚠️ Fehler beim Laden") für besseres Feedback | ⬜ Open | 🟡 Should |
+
+### 🟢 Optional
+
+| # | Task | Status | Priorität |
+|---|---|---|---|
+| 10.6 | **Error Tracking (Sentry)** – Sentry Free Tier für Produktionsfehler-Monitoring | ⬜ Open | 🟢 Nice |
+| 10.7 | **Offline-UX** – „Du bist offline"-Banner + Service Worker offline-Page aufwerten | ⬜ Open | 🟢 Nice |
+| 10.8 | **JSDoc-Typen** – Alle öffentlichen Funktionen in `supabase.js` vollständig annotieren | ⬜ Open | 🟢 Nice |
+
+---
+
 ## Legende
 
 | Symbol | Bedeutung |
