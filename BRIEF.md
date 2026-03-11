@@ -1,51 +1,86 @@
-# BRIEF.md – OSInt Location Monitor
-**Version:** 0.1.0
-**Datum:** 2026-03-10
+# BRIEF.md – OSInt Vacation
+**Version:** 0.8.0
+**Erstellt:** 2026-03-10 | **Aktualisiert:** 2026-03-11
 **Autor:** Clemens Pompeÿ
+
+> Dieses Dokument ist die lebende Projektbeschreibung. Es wird nach jedem Meilenstein aktualisiert
+> und spiegelt den aktuellen Funktionsumfang sowie die noch geplanten Features wider.
 
 ---
 
 ## 1. Kernfunktion
 
-Eine Progressive Web App, die öffentlich verfügbare Informationen zu spezifischen, europäischen Adressen (z. B. Ferienhaus) kontinuierlich überwacht und den Eigentümer via Telegram benachrichtigt, sobald kritische Ereignisse in der Region auftreten (Unwetter, Hochwasser, Feuer, Unruhen etc.).
+**OSInt Vacation** ist eine Progressive Web App, die öffentlich verfügbare Informationen zu spezifischen europäischen Adressen (z. B. Ferienhaus, Finca, Zweitwohnsitz) kontinuierlich überwacht und den Eigentümer via Telegram benachrichtigt, sobald kritische Ereignisse in der Region auftreten (Unwetter, Hochwasser, Feuer, Unruhen, Erdbeben).
+
+Zusätzlich erhalten Nutzer täglich um 09:00 Uhr einen Morgenbericht mit aktueller Wetterlage und politischer Lageeinschätzung für ihre überwachten Orte.
 
 ---
 
 ## 2. Zielgruppe & Problem
 
-**Nutzer:** Abwesende Ferienhaus-Eigentümer und deren Freunde/Bekannte in ähnlicher Situation.
+**Nutzer:** Abwesende Ferienhaus-Eigentümer und Personen mit Immobilien oder regelmäßigen Reisezielen in Europa, die sie nicht ständig persönlich besuchen können.
 
 **Hauptproblem:** Die Eigentümer sind die meiste Zeit nicht vor Ort und haben keinen Überblick über aktuelle Ereignisse am Anwesen. Das verhindert rechtzeitiges Reagieren – z. B. einen Hausmeister oder eine Vertrauensperson loszuschicken.
 
----
-
-## 3. MVP – Version 1
-
-Die folgenden Features müssen in Version 1 funktionieren:
-
-- **Ortsauswahl:** Eingabe einer konkreten Adresse (z. B. Straße, Ort, Land)
-- **Ereignis-Kategorien:** Auswahl aus 5 kritischen Kategorien (z. B. Unwetter, Hochwasser, Feuer, politische Unruhen, Erdbeben/Naturkatastrophen)
-- **Telegram-Benachrichtigung:** Push-Alerts bei kritischen Ereignissen über bestehenden Bot
-- **Live-Daten von Tag 1:** Keine Demo-Daten – Crawler lokaler Tageszeitungen und freier APIs als Informationsquellen
-- **Täglicher Morgenbericht (09:00 Uhr):** Automatische Telegram-Nachricht mit aktueller Temperatur, Wetterlage und kurzer politischer Lageeinschätzung für den Ort
-- **Optional (v1):** Login-Bereich (gesicherter Admin-Bereich) zur Verwaltung von Orten, Telegram-Zugangsdaten und Kategorien
+**Lösung:** Automatisches, 24/7-Monitoring mit sofortiger Telegram-Benachrichtigung. Kein manuelles Nachschauen auf Nachrichtenseiten nötig.
 
 ---
 
-## 4. Out of Scope (explizit ausgeschlossen)
+## 3. Erledigte Meilensteine & aktueller Funktionsumfang
 
-- Keine Mobile Native App (iOS/Android)
-- Kein Abo-Modell oder Monetarisierung im Prototypen
-- Keine In-App-Payments, keine Affiliate-Links (z. B. Mietwagen-Buchungen)
+| Meilenstein | Beschreibung | Status |
+|---|---|---|
+| M1 – Setup | Projektstruktur, Supabase-Schema, GitHub-Repo | ✅ Fertig |
+| M2 – Python Monitoring | Wetter, Erdbeben, News-Crawler, Telegram-Alerts, Morgenbericht | ✅ Fertig |
+| M3 – GitHub Actions | Cron-Scheduler (15 Min. Monitor, 09:00 Morgenbericht), Secrets | ✅ Fertig |
+| M4 – PWA Frontend | SvelteKit, Dashboard, Locations, Alerts, Settings, PWA-Manifest | ✅ Fertig |
+| M5 – Auth | Supabase Auth (Email/Passwort), Login, Route Guards, RLS | ✅ Fertig |
+| M6 – Deployment | Vercel-Deploy, E2E-Tests, Service Worker, Lighthouse-Config | ✅ Fertig |
+| M7 – Onboarding | Landing Page, Self-Signup, Onboarding-Wizard, Passwort-Reset | ✅ Fertig |
+| M8 – Performance | Server-side Loading, Supabase Keep-Alive, Cache-Optimierungen | ⬜ Geplant |
+
+### Was heute funktioniert (Live auf Vercel)
+
+- **Monitoring läuft automatisch** via GitHub Actions alle 15 Minuten (Unwetter, Erdbeben, Feuer, Unruhen, Hochwasser)
+- **Täglicher Morgenbericht** um 09:00 Uhr per Telegram
+- **Telegram-Alerts** bei kritischen Ereignissen (< 15 Min. Reaktionszeit)
+- **Web-App (PWA)** unter der Vercel-URL – installierbar auf Smartphone
+- **Dashboard:** Übersicht aktiver Orte und letzter Alerts
+- **Locations:** Orte via Adresse/Geocoding hinzufügen, bearbeiten, löschen
+- **Alert-Historie:** Alle versendeten Alerts mit Kategorie, Schweregrad, Quelle
+- **Settings:** Telegram Chat-ID konfigurieren
+- **Öffentliche Landing Page** (`/`) mit Produkt-Beschreibung, Features, CTA
+- **Self-Service-Registrierung** (`/register`) – neue Nutzer können sich selbst anmelden
+- **Onboarding-Wizard** (`/onboarding`) – führt neue Nutzer durch Telegram-Setup + ersten Ort
+- **Passwort vergessen** (`/reset-password`) – vollständiger Reset-Flow via E-Mail
 
 ---
 
-## 5. Integrationen & APIs
+## 4. Geplante Features (noch offen)
 
-- **Telegram Bot:** Bestehender Bot, HTTP API-Token liegt vor
-- **Wetter:** Kostenlose API (z. B. Open-Meteo, OpenWeatherMap Free Tier)
-- **News/Ereignisse:** Web-Crawler lokaler Tageszeitungen + kostenlose News-APIs (z. B. GNews, NewsAPI Free Tier)
-- **Politische Lage:** Öffentlich verfügbare Quellen / News-Aggregatoren
+| Feature | Meilenstein | Priorität |
+|---|---|---|
+| Server-side Datenladen (< 1 s statt 3+ Min.) | M8 | 🔴 Must |
+| Supabase Keep-Alive (GitHub Actions daily ping) | M8 | 🔴 Must |
+| `onboarding_done`-Cookie-Cache im Layout | M8 | 🟡 Should |
+| Custom Domain | M6 (offen) | 🟢 Nice |
+| Lighthouse-CI-Audit nach Deploy | M6 (offen) | 🟢 Nice |
+| Supabase E-Mail-Templates anpassen | M7 (User-Action) | 🟡 Should |
+
+---
+
+## 5. Tech-Stack
+
+| Schicht | Technologie | Begründung |
+|---|---|---|
+| Frontend | SvelteKit (PWA) | Leichtgewichtig, SSR, kein Framework-Overhead |
+| Datenbank + Auth | Supabase (PostgreSQL + Auth) | Kostenlos, RLS, realtime-fähig |
+| Hosting Frontend | Vercel | Zero-Config SvelteKit-Deploy, 0€ |
+| Monitoring-Scripts | Python (GitHub Actions) | Beste Crawling-Libraries, 0€ bei Public Repo |
+| Alerts | Telegram Bot API | Bestehender Bot, sofortige Push-Notifications |
+| Wetter | Open-Meteo | Kostenlos, kein API-Key, EU-Server |
+| News | GNews Free Tier | REST JSON, 100 Req./Tag |
+| Geocoding | Nominatim (OSM) | Kostenlos, kein API-Key |
 
 ---
 
@@ -54,42 +89,53 @@ Die folgenden Features müssen in Version 1 funktionieren:
 | Constraint | Details |
 |---|---|
 | Budget | 0 € (nur kostenlose APIs und Services) |
-| Hosting | Kostenlos (z. B. Vercel, Render, Railway Free Tier) |
+| Hosting | Vercel (Frontend), GitHub Actions (Scripts), Supabase Free Tier (DB) |
 | Repository | GitHub Public Repository |
 | Zeitrahmen | Kein fixer Deadline-Druck |
 | Deployment | Cloud-hosted, kein lokaler Betrieb |
+| Datenquellen | Nur öffentlich verfügbare Informationen (OSINT-Prinzip) |
 
 ---
 
-## 7. Definition of Done (Version 1)
+## 7. Ereignis-Kategorien
 
-- [ ] Mindestens eine Adresse ist im System hinterlegt
-- [ ] Täglich um 09:00 Uhr trifft eine Telegram-Nachricht mit Wetter + politischer Lageeinschätzung ein
-- [ ] Bei einem Unwetter (oder Test-Event) in der Region wird automatisch eine Telegram-Alert-Nachricht ausgelöst
-- [ ] Die App ist als PWA im Browser und auf dem Smartphone nutzbar
-
----
-
-## 8. Ereignis-Kategorien (final)
-
-| # | Kategorie | Beschreibung |
-|---|---|---|
-| 1 | Unwetter | Sturm, Hagel, Schneefall, Extremtemperaturen |
-| 2 | Hochwasser | Überschwemmungen, Pegelstände |
-| 3 | Feuer / Waldbrand | Wald- und Flächenbrände, Großbrände |
-| 4 | Politische Unruhen | Demonstrationen, Ausschreitungen, Sicherheitslage |
-| 5 | Erdbeben | Seismische Aktivitäten in der Region |
+| # | Kategorie | Datenquelle | Schwellwert |
+|---|---|---|---|
+| 1 | Unwetter | Open-Meteo | WMO Code ≥ 82 ODER Wind ≥ 70 km/h |
+| 2 | Hochwasser | GNews | News-Keywords im Umkreis |
+| 3 | Feuer / Waldbrand | GNews | News-Keywords im Umkreis |
+| 4 | Politische Unruhen | GNews | News-Keywords im Umkreis |
+| 5 | Erdbeben | USGS Earthquake API | Magnitude ≥ 4.0 im Radius 100 km |
 
 ---
 
-## 9. Alert-Timing & Berichtsformat
+## 8. Alert-Verhalten
 
-- **Kritische Alerts:** Auslösung innerhalb von **15 Minuten** nach Erkennung
+- **Kritische Alerts:** Auslösung innerhalb von 15 Minuten nach Erkennung
+- **Deduplizierung:** Ein Alert pro Location + Kategorie innerhalb von 2 Stunden
 - **Täglicher Morgenbericht (09:00 Uhr):**
   - Aktuelle Temperatur & Wetterlage
   - Kurze politische Lageeinschätzung
-  - **"Alles ruhig"-Status** wenn keine Ereignisse vorliegen
+  - „Alles ruhig"-Status wenn keine Ereignisse vorliegen
 
 ---
 
-*Dokument finalisiert am 2026-03-10 – bereit für Tech-Stack-Entscheidung.*
+## 9. Definition of Done
+
+### Version 1 (MVP) – ✅ Erreicht
+
+- [x] Mindestens eine Adresse ist im System hinterlegt
+- [x] Täglich um 09:00 Uhr trifft eine Telegram-Nachricht ein
+- [x] Bei einem Unwetter in der Region wird automatisch eine Telegram-Alert-Nachricht ausgelöst
+- [x] Die App ist als PWA im Browser und auf dem Smartphone nutzbar
+
+### Version 2 (aktuell) – 🔄 In Arbeit
+
+- [x] Neue Nutzer können sich selbst registrieren (ohne manuellen Supabase-Eingriff)
+- [x] Onboarding-Flow führt neue Nutzer durch die Einrichtung
+- [x] Öffentliche Landing Page erklärt die App
+- [ ] Ladezeiten < 5 Sekunden (auch nach Supabase-Inaktivität) ← M8
+
+---
+
+*Dokument zuletzt aktualisiert: 2026-03-11 nach Abschluss Milestone 7*

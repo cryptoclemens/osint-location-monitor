@@ -1,6 +1,6 @@
 # DECISIONS.md – Architekturentscheidungen
 **Projekt:** OSInt Vacation
-**Version:** 0.7.0 | **Letzte Aktualisierung:** 2026-03-11
+**Version:** 0.8.0 | **Letzte Aktualisierung:** 2026-03-11
 
 > Dieses Dokument hält alle relevanten Architektur- und Technologie-Entscheidungen fest.
 > Format: Datum · Entscheidung · Begründung · Alternativen (abgelehnt)
@@ -249,6 +249,57 @@
 - *sessionStorage:* JSON-Serialisierung, kein SSR-Support, cross-tab-Issues → abgelehnt
 - *SvelteKit Stores mit persist:* Overhead, komplexere Invalidierung → für später vorgemerkt
 - *SWR / React Query Pattern:* Overkill für diesen Use-Case → abgelehnt
+
+---
+
+### [2026-03-11] M8 Performance: Server-side Datenladen via +page.server.js
+**Status:** Geplant (M8)
+
+**Entscheidung:** Dashboard, Locations und Alerts bekommen je eine `+page.server.js` mit einer `load()`-Funktion. Die Daten werden server-seitig via `locals.supabase` geladen und im initialen HTML-Response mitgeliefert. Die `onMount()`-Datenabfragen in den Svelte-Komponenten entfallen.
+
+**Begründung:**
+- Aktuell: Browser lädt HTML → JS ausführen → Supabase anfragen → rendern (3 Schritte mit Wartezeit)
+- Neu: Server fragt Supabase → rendert HTML mit Daten → Browser empfängt fertiges HTML (1 Schritt)
+- SvelteKit-`load()`-Funktionen laufen parallel zum Layout-Load → kein zusätzlicher Overhead
+- `locals.supabase` ist bereits konfiguriert (läuft via `hooks.server.js`) – kein neuer Client nötig
+
+**Alternativen:**
+- *Client-side mit Skeleton Loader:* UX-Verbesserung ohne Architekturumstellung, aber keine Latenzeinsparung → abgelehnt
+- *SvelteKit `+page.js` (universell):* Würde auch SSR nutzen, aber kein Zugriff auf `locals.supabase` → abgelehnt
+
+---
+
+### [2026-03-11] M8 Performance: Supabase Keep-Alive via GitHub Actions
+**Status:** Geplant (M8)
+
+**Entscheidung:** Ein neuer GitHub-Actions-Workflow (`.github/workflows/supabase-keepalive.yml`) führt täglich einen simplen `SELECT 1`-Query via `psql` gegen Supabase aus. Das verhindert, dass das Free-Tier-Projekt in den Schlafmodus geht.
+
+**Begründung:**
+- Supabase Free Tier pausiert Projekte nach 7 Tagen ohne aktive Verbindung
+- Cold Start nach Pause: 30–180 Sekunden → erklärt die gemeldeten 3+ Minuten Ladezeit
+- Der tägliche Monitor-Cron (alle 15 Min.) und Morgenbericht (09:00 Uhr) sollten das Projekt eigentlich wach halten – aber nur wenn GitHub Actions auch wirklich läuft (manchmal verzögert)
+- Ein expliziter Keep-Alive-Job auf ein anderes Zeitfenster (z. B. 06:00 Uhr) gibt zusätzliche Sicherheit
+
+**Alternativen:**
+- *Supabase Pro Tier (kein Pause-Problem):* 25 $/Monat → Out of Scope (Budget 0 €) → abgelehnt
+- *Vercel Cron Job als Keep-Alive:* Würde funktionieren, aber GitHub Actions ist schon vorhanden → abgelehnt
+
+---
+
+### [2026-03-11] M8 Performance: onboarding_done-Cookie-Cache im Layout
+**Status:** Geplant (M8)
+
+**Entscheidung:** Nach dem ersten erfolgreichen `onboarding_done = true`-Check in `+layout.server.js` wird ein kurzlebiges Cookie (z. B. 24-Stunden-TTL) gesetzt. Bei Folge-Requests liest das Layout den Cookie statt eine DB-Query abzusetzen.
+
+**Begründung:**
+- `+layout.server.js` fragt aktuell bei jedem Auth-Route-Aufruf `profiles.onboarding_done` ab
+- Das ist eine synchrone Supabase-Query auf jedem Seitenaufruf – bei Cold Start besonders teuer
+- `onboarding_done` wechselt nur einmal (von `false` → `true`) → häufiges Neu-Lesen nicht nötig
+- Cookie-Ansatz ist SSR-sicher, HTTP-only, funktioniert ohne JavaScript
+
+**Alternativen:**
+- *JWT Custom Claims:* Eleganter, aber erfordert Supabase Edge Functions → zu viel Overhead für M8 → für später vorgemerkt
+- *Layout Data weitergeben:* `onboarding_done` ist bereits im Layout-`data`-Objekt – Svelte-Routen können ihn nutzen, aber der Server muss ihn trotzdem pro Request laden → abgelehnt als alleinige Lösung
 
 ---
 

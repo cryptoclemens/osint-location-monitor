@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Vacation
-**Version:** 0.7.0 | **Letzte Aktualisierung:** 2026-03-11
+**Version:** 0.8.0 | **Letzte Aktualisierung:** 2026-03-11
 
 ---
 
@@ -127,6 +127,35 @@
 - **Routing:** `/` ist die öffentliche Landing Page. Das Dashboard liegt auf `/dashboard` (auth-geschützt). Eingeloggte User werden von `/` automatisch zu `/dashboard` weitergeleitet.
 - **Supabase Self-Signup:** Muss in Supabase Dashboard → Authentication → Providers → Email → „Enable Sign Ups" aktiviert werden.
 - **Onboarding:** Einmaliger Wizard nach erstem Login, der Telegram-Chat-ID und ersten Ort abfragt. State in `profiles.onboarding_done` (Boolean). Redirect via `+layout.server.js`.
+
+---
+
+## Milestone 8 – Performance & Stabilität ⬜
+
+**Ziel:** Ladezeiten von 3+ Minuten auf < 5 Sekunden reduzieren. Ursachen: Supabase Free-Tier Cold Start (Projekt pausiert nach Inaktivität) + alle Daten werden ausschließlich client-seitig nach dem JS-Bootstrap geladen.
+
+**Diagnose:** Drei unabhängige Ursachen wurden identifiziert:
+1. **Cold Start** – Supabase Free Tier pausiert das Projekt nach ~7 Tagen Inaktivität → 30–180 s Aufwachzeit
+2. **Client-seitiges Datenladen** – alle Seiten nutzen `onMount()` statt SvelteKit-`load()`-Funktionen → extra Render-Zyklus vor dem ersten Supabase-Request
+3. **DB-Query auf jede Seite** – `+layout.server.js` prüft `onboarding_done` bei jedem Request via Supabase → unnötiger Overhead nach einmaligem Check
+
+| # | Task | Status | Priorität |
+|---|---|---|---|
+| 8.1 | Server-side `load()` für Dashboard – `+page.server.js` mit parallelem `getLocations` + `getAlerts` via `locals.supabase` | ⬜ Open | 🔴 Must |
+| 8.2 | Server-side `load()` für Locations – `+page.server.js` mit `getLocations` | ⬜ Open | 🔴 Must |
+| 8.3 | Server-side `load()` für Alerts – `+page.server.js` mit `getAlerts` | ⬜ Open | 🔴 Must |
+| 8.4 | Supabase Keep-Alive – GitHub Actions Cron (täglich) pingt Supabase mit `SELECT 1` → verhindert Projekt-Pause | ⬜ Open | 🔴 Must |
+| 8.5 | `onboarding_done`-Cookie-Cache in `+layout.server.js` – nach erstem Check Cookie setzen, Folge-Requests lesen Cookie statt DB | ⬜ Open | 🟡 Should |
+| 8.6 | Svelte-Seiten anpassen – `onMount`-Datenfetching durch `data`-Prop aus `load()` ersetzen (Dashboard, Locations, Alerts) | ⬜ Open | 🔴 Must |
+| 8.7 | DECISIONS.md + TASKS.md aktualisieren + Commit + Push | ⬜ Open | 🔴 Must |
+
+### Erwartetes Ergebnis nach M8
+
+| Szenario | Vorher | Nachher |
+|---|---|---|
+| Supabase warm (normale Nutzung) | ~3–10 s | < 1 s (Daten im initialen HTML) |
+| Supabase kalt (nach Inaktivität) | 3+ Minuten | < 30 s (Keep-Alive verhindert Pause; falls doch kalt: Server-SSR puffert den Warte-Request) |
+| Navigation zwischen Seiten | ~3–5 s pro Seite | < 1 s (In-Memory-Cache aus M7 greift) |
 
 ---
 
