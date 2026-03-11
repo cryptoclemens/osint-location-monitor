@@ -1,9 +1,11 @@
 <script>
   // M9 (Task 9.8): Refactored – modal and card extracted into dedicated components.
   // This file is now ~150 lines (was ~800).
+  // M10 (Task 10.6): Toast notifications for save/delete/toggle feedback.
   import { getLocations, deleteLocation, updateLocation } from '$lib/supabase.js';
   import LocationModal from '$lib/components/LocationModal.svelte';
   import LocationCard  from '$lib/components/LocationCard.svelte';
+  import { toast } from '$lib/toastStore.js';
 
   // ── State ──────────────────────────────────────────────────────────
   /** @type {import('./$types').PageData} */
@@ -60,9 +62,16 @@
     editingLocation = null;
   }
 
-  async function onModalSaved() {
+  async function onModalSaved(event) {
     closeModal();
+    const name = event?.detail?.name;
+    const isNew = event?.detail?.isNew;
     await loadLocations();
+    if (isNew) {
+      toast.success(`✅ Ort "${name ?? 'Neuer Ort'}" hinzugefügt!`);
+    } else {
+      toast.success(`✅ Ort "${name ?? 'Ort'}" aktualisiert!`);
+    }
   }
 
   // ── Card event handlers ────────────────────────────────────────────
@@ -70,17 +79,23 @@
     try {
       await updateLocation(loc.id, { is_active: !loc.is_active });
       await loadLocations();
+      const state = loc.is_active ? 'deaktiviert' : 'aktiviert';
+      toast.info(`ℹ️ "${loc.name}" ${state}.`);
     } catch (e) {
       error = 'Fehler beim Aktualisieren: ' + e.message;
+      toast.error('⚠️ ' + error);
     }
   }
 
   async function handleDelete(locId) {
+    const loc = locations.find(l => l.id === locId);
     try {
       await deleteLocation(locId);
       await loadLocations();
+      toast.success(`🗑️ "${loc?.name ?? 'Ort'}" gelöscht.`);
     } catch (e) {
       error = 'Löschen fehlgeschlagen: ' + e.message;
+      toast.error('⚠️ ' + error);
     }
   }
 

@@ -4,6 +4,7 @@
   import { version } from '$app/environment';
   import { supabase } from '$lib/supabase.js';
   import { onMount } from 'svelte';
+  import Toast from '$lib/components/Toast.svelte';
 
   export let data;
 
@@ -73,6 +74,10 @@
     </footer>
   {/if}
 </div>
+
+<!-- Global toast notifications (M10 Task 10.6) – rendered outside the layout div
+     so they are always on top regardless of overflow: hidden on parent elements. -->
+<Toast />
 
 <style>
   :global(*, *::before, *::after) { box-sizing: border-box; margin: 0; padding: 0; }

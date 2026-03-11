@@ -230,10 +230,10 @@
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
-| 10.3 | **Passwort-Reset als Server Action** – `reset-password/+page.svelte` analog zu `register` auf `+page.server.js`-Action umstellen + deutsche Fehlermeldungen via `toGermanAuthError()` | ⬜ Open | 🟡 Should |
+| 10.3 | **Passwort-Reset als Server Action** – `reset-password/+page.server.js` mit `actions.sendResetEmail` + `toGermanAuthError()`. Schritt 2 bleibt client-seitig (PKCE). | ✅ Done | 🟡 Should |
 | 10.4 | **Auto-Version-Script** – `scripts/bump-version.js` bumpt `package.json` und aktualisiert `BRIEF.md` + `TASKS.md` mit neuem Datum. Via `npm run bump -- patch/minor/major`. | ✅ Done | 🟡 Should |
-| 10.5 | **Alerts-Filter persistent machen** – Gewählte Filter (Zeitraum, Kategorie, Schweregrad) im `sessionStorage` speichern, sodass sie nach Navigation erhalten bleiben | ⬜ Open | 🟡 Should |
-| 10.6 | **Toast-Notifications** – Ersetze reine Error-Banner durch kurze In-App-Toasts (z.B. „✅ Ort gespeichert", „⚠️ Fehler beim Laden") für besseres Feedback | ⬜ Open | 🟡 Should |
+| 10.5 | **Alerts-Filter persistent** – `sessionStorage` in `alerts/+page.svelte`: restore on mount, save on change, clear on reset. | ✅ Done | 🟡 Should |
+| 10.6 | **Toast-Notifications** – `toastStore.js` + `Toast.svelte` + Integration in Settings und Locations (save/delete/toggle). | ✅ Done | 🟡 Should |
 
 ### 🟢 Optional
 

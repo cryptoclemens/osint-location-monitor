@@ -1,6 +1,7 @@
 <script>
   import { version } from '$app/environment';
   import { supabase } from '$lib/supabase.js';
+  import { toast } from '$lib/toastStore.js';
 
   // ── Server data (loaded via +page.server.js, no onMount needed) ────
   /** @type {import('./$types').PageData} */
@@ -11,31 +12,25 @@
   // loading is false from the start since SSR already fetched the data.
   let profile = data.profile;
   let loading = false;
-  let error = null;
 
   let chatId = profile?.telegram_chat_id ?? '';
   let saving = false;
-  let saveSuccess = false;
-  let saveError = null;
 
   let testing = false;
-  let testResult = null; // { ok: bool, message: string }
 
   // ── Save Chat ID ───────────────────────────────────────────────────
   async function handleSave() {
     const trimmed = chatId.trim();
     if (!trimmed) {
-      saveError = 'Bitte eine Telegram Chat-ID eingeben.';
+      toast.error('⚠️ Bitte eine Telegram Chat-ID eingeben.');
       return;
     }
     if (!/^-?\d+$/.test(trimmed)) {
-      saveError = 'Chat-ID muss eine Zahl sein (z.B. 158814280 oder -100123456789 für Gruppen).';
+      toast.error('⚠️ Chat-ID muss eine Zahl sein (z.B. 158814280 oder -100123456789 für Gruppen).');
       return;
     }
 
     saving = true;
-    saveError = null;
-    saveSuccess = false;
 
     try {
       if (profile) {
@@ -47,18 +42,17 @@
       } else {
         // No profile yet – would need user.id in real auth setup
         // For now store without user_id (single-user mode)
-        const { data, error: err } = await supabase
+        const { data: newProfile, error: err } = await supabase
           .from('profiles')
           .insert({ telegram_chat_id: trimmed })
           .select()
           .single();
         if (err) throw err;
-        profile = data;
+        profile = newProfile;
       }
-      saveSuccess = true;
-      setTimeout(() => saveSuccess = false, 3000);
+      toast.success('✅ Chat-ID erfolgreich gespeichert!');
     } catch (e) {
-      saveError = 'Speichern fehlgeschlagen: ' + e.message;
+      toast.error('⚠️ Speichern fehlgeschlagen: ' + e.message);
     } finally {
       saving = false;
     }
@@ -68,24 +62,27 @@
   async function handleTestTelegram() {
     const trimmed = chatId.trim();
     if (!trimmed) {
-      testResult = { ok: false, message: 'Bitte zuerst eine Chat-ID eingeben.' };
+      toast.error('⚠️ Bitte zuerst eine Chat-ID eingeben und speichern.');
       return;
     }
 
     testing = true;
-    testResult = null;
 
     try {
-      // We call the Telegram API directly from the browser using the bot token
-      // Note: in production this should go through a backend function.
-      // For dev/testing this is acceptable as bot token is already in .env.local
-      // and GitHub Secrets – not in the frontend bundle.
-      // Here we just send a test via a Supabase Edge Function or direct fetch.
-      // Since we don't have an Edge Function yet, we show a manual instruction instead.
-      testResult = {
-        ok: null, // null = info, not success/fail
-        message: `Um den Bot zu testen, sende über Telegram /start an deinen Bot und prüfe dann, ob eine Testnachricht ankommt. Die Chat-ID ${trimmed} ist eingetragen.`
-      };
+      const res = await fetch('/api/test-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId: trimmed }),
+      });
+      const body = await res.json();
+
+      if (res.ok && body.ok) {
+        toast.success('✅ Test-Nachricht erfolgreich gesendet!');
+      } else {
+        toast.error('❌ ' + (body.userMessage ?? body.message ?? 'Test fehlgeschlagen.'));
+      }
+    } catch (e) {
+      toast.error('❌ Verbindungsfehler: ' + e.message);
     } finally {
       testing = false;
     }
@@ -107,11 +104,6 @@
       <p class="subtitle">Telegram-Konfiguration und App-Informationen</p>
     </div>
   </div>
-
-  <!-- Error -->
-  {#if error}
-    <div class="banner error">⚠️ {error}</div>
-  {/if}
 
   <!-- ── Telegram Section ─────────────────────────────────── -->
   <section class="settings-section">
@@ -147,13 +139,6 @@
             </button>
           </div>
 
-          {#if saveSuccess}
-            <p class="field-success">✅ Chat-ID erfolgreich gespeichert!</p>
-          {/if}
-          {#if saveError}
-            <p class="field-error">{saveError}</p>
-          {/if}
-
           <details class="help-details">
             <summary>Wie finde ich meine Chat-ID?</summary>
             <pre class="help-text">{getChatIdHelp()}</pre>
@@ -172,11 +157,6 @@
             {testing ? '⏳ Teste…' : '🔔 Telegram testen'}
           </button>
 
-          {#if testResult}
-            <div class="test-result" class:info={testResult.ok === null} class:success={testResult.ok === true} class:error={testResult.ok === false}>
-              {testResult.message}
-            </div>
-          {/if}
         </div>
 
         <!-- Current status -->
