@@ -167,6 +167,7 @@
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
+| 9.0 | **Bug: `/api/test-telegram` fehlt** – Onboarding Schritt 2 zeigt „Verbindungsfehler" weil die SvelteKit-API-Route nie erstellt wurde. `fetch('/api/test-telegram')` gibt 404 zurück → `res.json()` wirft → Catch-Block zeigt "Verbindungsfehler". Fix: `src/routes/api/test-telegram/+server.js` erstellen (POST, liest `TELEGRAM_BOT_TOKEN` server-seitig, sendet Testnachricht via Bot-API an übergebene `chatId`) | ⬜ Open | 🔴 Must |
 | 9.1 | **Rate Limiting** – `/register`, `/reset-password` und Geocoding-Endpoint gegen Missbrauch absichern (z. B. Supabase-seitiger Schutz + client-seitiger Debounce auf Geocoding) | ⬜ Open | 🔴 Must |
 | 9.2 | **Geocoding-Timeout** – `geocodeAddress()` in `supabase.js` mit 8-Sekunden-Timeout absichern (analog zum 10-s-Timeout in `loadLocations()`) | ⬜ Open | 🔴 Must |
 | 9.3 | **Supabase RLS-Audit** – Manuelle Prüfung aller Row-Level-Security-Policies im Supabase Dashboard; sicherstellen, dass kein User Daten anderer User lesen/schreiben kann | ⬜ Open | 🔴 Must |
