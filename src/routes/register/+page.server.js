@@ -9,7 +9,10 @@
 // M9 (Task 9.10): Supabase error codes are translated to German user messages here.
 
 import { fail } from '@sveltejs/kit';
-import { PUBLIC_SITE_URL } from '$env/static/public';
+// Use $env/dynamic/public so the build doesn't fail when PUBLIC_SITE_URL is
+// absent at build time (e.g. on Vercel). The value is read at request time.
+import { env } from '$env/dynamic/public';
+const PUBLIC_SITE_URL = env.PUBLIC_SITE_URL ?? '';
 
 // ── German error message mapping (Task 9.10) ────────────────────────────────
 // Maps common Supabase auth error messages / codes to friendly German strings.

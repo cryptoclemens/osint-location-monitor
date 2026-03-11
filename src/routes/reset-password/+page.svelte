@@ -7,8 +7,10 @@
   import { supabase } from '$lib/supabase.js';
   import { goto } from '$app/navigation';
   import { onMount, onDestroy } from 'svelte';
-  // PUBLIC_SITE_URL must match Supabase Dashboard → Authentication → URL Configuration → Site URL.
-  import { PUBLIC_SITE_URL } from '$env/static/public';
+  // Use $env/dynamic/public so the build doesn't fail when PUBLIC_SITE_URL is
+  // absent at build time. The value is read at runtime in the browser.
+  import { env } from '$env/dynamic/public';
+  const PUBLIC_SITE_URL = env.PUBLIC_SITE_URL ?? '';
 
   // ── State ─────────────────────────────────────────────────
   // 'request'  → show email input (initial state)
