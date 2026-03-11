@@ -1,6 +1,7 @@
 <script>
   import { page } from '$app/stores';
   import { goto, invalidateAll } from '$app/navigation';
+  import { version } from '$app/environment';
   import { supabase } from '$lib/supabase.js';
   import { onMount } from 'svelte';
 
@@ -66,7 +67,7 @@
 
   {#if user}
     <footer>
-      <p>OSInt Vacation v0.9.0 &mdash;
+      <p>OSInt Vacation v{version} &mdash;
         <a href="https://github.com/cryptoclemens/osint-location-monitor" target="_blank">GitHub</a>
       </p>
     </footer>

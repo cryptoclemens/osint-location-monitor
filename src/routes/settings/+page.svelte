@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { version } from '$app/environment';
   import { supabase } from '$lib/supabase.js';
 
   // ── State ──────────────────────────────────────────────────────────
@@ -281,8 +282,8 @@
       <div class="info-grid">
         <div class="info-item">
           <div class="info-label">Version</div>
-          <div class="info-value">0.9.0</div>
-          <div class="info-sub">Milestone 9 – Sicherheit & Code-Qualität</div>
+          <div class="info-value">{version}</div>
+          <div class="info-sub">Milestone 10 – Polish & Developer Experience</div>
         </div>
         <div class="info-item">
           <div class="info-label">Frontend</div>

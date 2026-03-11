@@ -220,7 +220,7 @@
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
-| 10.0 | **Dynamische Versionsnummer** – Hartcodierte Version-Strings in `+layout.svelte` (Footer) und `settings/+page.svelte` durch `import { version } from '$app/environment'` ersetzen. SvelteKit liest `version` automatisch aus `package.json` – nie mehr vergessen zu aktualisieren. | ⬜ Open | 🔴 Must |
+| 10.0 | **Dynamische Versionsnummer** – `svelte.config.js` liest `version` aus `package.json` via `readFileSync` und setzt `kit.version.name`. Footer in `+layout.svelte` und Version-Card in `settings/+page.svelte` nutzen `import { version } from '$app/environment'`. `package.json` auf `0.10.0` gehoben. | ✅ Done | 🔴 Must |
 | 10.1 | **README.md aktualisieren** – App-Name, Live-URL, Screenshots, korrekte Projektstruktur, Milestone-Übersicht, `npm test`-Befehl. README spiegelt v0.9.0-Stand wider. | ✅ Done | 🔴 Must |
 | 10.2 | **Vercel Build-Fehler behoben + Env-Var setzen** – Ursache des Build-Fehlers (`"TELEGRAM_BOT_TOKEN" is not exported by "virtual:env/static/private"`): `$env/static/private` bettet Werte zur Build-Zeit ein – fehlt die Variable im Vercel-Build, bricht der Build ab. Fix: `api/test-telegram/+server.js` auf `$env/dynamic/private` umgestellt (liest zur Request-Zeit aus `process.env`). **Ausstehende Nutzeraktion:** `TELEGRAM_BOT_TOKEN` im Vercel Dashboard unter Settings → Environment Variables eintragen, dann Redeploy. | ✅ Code-Fix done – Vercel Env-Var durch Clemens setzen | 🔴 Must |
 
