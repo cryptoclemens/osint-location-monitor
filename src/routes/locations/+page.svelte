@@ -17,8 +17,10 @@
   let showModal       = false;
   let editingLocation = null; // null = new, object = editing
 
-  // Category definitions (shared between page + components)
-  const CATEGORIES = [
+  // Category definitions (shared between page + components).
+  // Lowercase `categories` matches the {categories} shorthand in the template
+  // passed to LocationCard / LocationModal – was CATEGORIES (bug: undefined prop).
+  const categories = [
     { key: 'unwetter',   label: 'Unwetter',          icon: '⛈️',  desc: 'Sturm, Gewitter, Hagel' },
     { key: 'hochwasser', label: 'Hochwasser',         icon: '🌊',  desc: 'Überflutungen, Starkregen' },
     { key: 'feuer',      label: 'Feuer / Waldbrand',  icon: '🔥',  desc: 'Brand, Waldbrand' },

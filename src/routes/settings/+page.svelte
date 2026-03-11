@@ -1,51 +1,25 @@
 <script>
-  import { onMount } from 'svelte';
   import { version } from '$app/environment';
   import { supabase } from '$lib/supabase.js';
 
+  // ── Server data (loaded via +page.server.js, no onMount needed) ────
+  /** @type {import('./$types').PageData} */
+  export let data;
+
   // ── State ──────────────────────────────────────────────────────────
-  let profile = null;
-  let loading = true;
+  // Profile and chatId are initialised from server-loaded data.
+  // loading is false from the start since SSR already fetched the data.
+  let profile = data.profile;
+  let loading = false;
   let error = null;
 
-  let chatId = '';
+  let chatId = profile?.telegram_chat_id ?? '';
   let saving = false;
   let saveSuccess = false;
   let saveError = null;
 
   let testing = false;
   let testResult = null; // { ok: bool, message: string }
-
-  // Supabase anon key from env (public, safe to display masked)
-  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
-
-  // ── Lifecycle ──────────────────────────────────────────────────────
-  onMount(async () => {
-    await loadProfile();
-  });
-
-  async function loadProfile() {
-    loading = true;
-    error = null;
-    try {
-      // Load profile – using service role via supabase client
-      // In production with auth this would use supabase.auth.getUser()
-      // For now we load the first (and only) profile row
-      const { data, error: err } = await supabase
-        .from('profiles')
-        .select('*')
-        .limit(1)
-        .single();
-
-      if (err && err.code !== 'PGRST116') throw err; // PGRST116 = not found
-      profile = data || null;
-      chatId = profile?.telegram_chat_id || '';
-    } catch (e) {
-      error = e.message;
-    } finally {
-      loading = false;
-    }
-  }
 
   // ── Save Chat ID ───────────────────────────────────────────────────
   async function handleSave() {
