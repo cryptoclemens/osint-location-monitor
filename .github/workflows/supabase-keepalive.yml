@@ -1,0 +1,54 @@
+# supabase-keepalive.yml – Verhindert das Einschlafen des Supabase Free-Tier-Projekts
+#
+# Supabase Free Tier pausiert Projekte nach 7 Tagen ohne DB-Aktivität.
+# Cold Start nach Pause: 30–180 Sekunden → erklärt die 3+ Minuten Ladezeit.
+#
+# Dieser Workflow pingt täglich um 06:00 UTC (08:00 CEST) die Supabase REST API
+# mit einem minimalen Datenbankaufruf. Kein psql nötig – der Supabase REST-Endpunkt
+# reicht aus, um einen aktiven DB-Request zu erzeugen.
+#
+# GitHub Secrets benötigt:
+#   SUPABASE_URL         – https://<project>.supabase.co
+#   SUPABASE_SERVICE_KEY – service_role Key (umgeht RLS, hat DB-Zugriff)
+
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # 06:00 UTC = 08:00 CEST – vor dem Morgenbericht (09:00 CEST) und dem Monitor (alle 15 Min.)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Manuell auslösen zum Testen
+
+jobs:
+  ping:
+    name: Ping Supabase DB
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping Supabase REST API (SELECT-Äquivalent)
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          echo "Pinging Supabase at $(date -u '+%Y-%m-%d %H:%M:%S UTC')..."
+
+          # Minimaler REST-Call: liest max. 1 Profil-Zeile – reicht um DB-Aktivität zu erzeugen
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            --max-time 30)
+
+          echo "HTTP Status: ${HTTP_STATUS}"
+
+          if [ "${HTTP_STATUS}" -ge 200 ] && [ "${HTTP_STATUS}" -lt 300 ]; then
+            echo "✅ Supabase ist erreichbar und aktiv."
+          elif [ "${HTTP_STATUS}" -eq 401 ] || [ "${HTTP_STATUS}" -eq 403 ]; then
+            echo "⚠️  Authentifizierungsfehler (${HTTP_STATUS}). Bitte SUPABASE_SERVICE_KEY im GitHub Secret prüfen."
+            exit 1
+          else
+            echo "❌ Unerwarteter Status: ${HTTP_STATUS}. Supabase möglicherweise nicht erreichbar."
+            exit 1
+          fi

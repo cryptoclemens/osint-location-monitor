@@ -1,11 +1,16 @@
 <script>
-  import { onMount } from 'svelte';
+  // M8 (Tasks 8.3 + 8.6): Data is loaded server-side via +page.server.js.
+  // The manual "Aktualisieren" button still triggers a client-side loadAlerts().
   import { getAlerts } from '$lib/supabase.js';
 
+  /** @type {import('./$types').PageData} */
+  export let data;
+
   // ── State ──────────────────────────────────────────────────────────
-  let alerts = [];
-  let loading = true;
-  let error = null;
+  // loading starts false – initial data comes from SSR
+  let alerts  = data.alerts;
+  let loading = false;
+  let error   = data.loadError ?? null;
 
   // Filters
   let filterCategory = 'all';
@@ -36,11 +41,7 @@
     { value: '90',  label: 'Letzte 90 Tage' },
   ];
 
-  // ── Lifecycle ──────────────────────────────────────────────────────
-  onMount(async () => {
-    await loadAlerts();
-  });
-
+  // loadAlerts() – called by the "Aktualisieren" button for manual refresh
   async function loadAlerts() {
     loading = true;
     error = null;

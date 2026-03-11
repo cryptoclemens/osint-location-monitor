@@ -1,28 +1,21 @@
 <script>
-  import { onMount } from 'svelte';
-  import { getLocations, getAlerts } from '$lib/supabase.js';
+  // M8 (Tasks 8.1 + 8.6): Data is now loaded server-side via +page.server.js.
+  // The `data` prop contains locations + alerts from the initial SSR HTML response,
+  // eliminating the client-side loading delay.
+  // `loading` is kept for a future manual-refresh button but starts as false.
 
-  let locations = [];
-  let recentAlerts = [];
-  let loading = true;
-  let error = null;
+  /** @type {import('./$types').PageData} */
+  export let data;
+
+  // Initialise from SSR data – no onMount fetch needed
+  let locations    = data.locations;
+  let recentAlerts = data.alerts;
+  let loading      = false;
+  let error        = data.loadError ?? null;
 
   const CATEGORY_ICONS = {
     unwetter: '🌩️', hochwasser: '🌊', feuer: '🔥', unruhen: '⚠️', erdbeben: '🏔️'
   };
-
-  onMount(async () => {
-    try {
-      [locations, recentAlerts] = await Promise.all([
-        getLocations(),
-        getAlerts(10),
-      ]);
-    } catch (e) {
-      error = e.message;
-    } finally {
-      loading = false;
-    }
-  });
 
   function timeAgo(dateStr) {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -48,7 +41,11 @@
 </div>
 
 {#if loading}
-  <div class="empty-state"><div class="icon">⏳</div><p>Lade Daten…</p></div>
+  <!-- M8 (Task 8.8): Centered spinner, visually consistent with locations/+page.svelte -->
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <p>Lade Daten…</p>
+  </div>
 {:else if error}
   <div class="error-box">⚠️ Fehler beim Laden: {error}</div>
 {:else}
@@ -162,6 +159,23 @@
   .alert-icon { font-size: 1.1rem; }
   .alert-title { flex: 1; font-size: 0.875rem; font-weight: 500; }
   .alert-meta { display: flex; gap: 0.75rem; font-size: 0.775rem; color: #666; flex-wrap: wrap; }
+
+  /* ── Loading state (M8 Task 8.8) – matches locations/+page.svelte ── */
+  .loading-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #888;
+  }
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #333;
+    border-top-color: #7c9fd4;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   .error-box { background: #2a1a1a; border: 1px solid #5c2a2a; border-radius: 8px; padding: 1rem; color: #f87272; }
 

@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from 'svelte';
   import {
     getLocations,
     createLocation,
@@ -10,8 +9,9 @@
   } from '$lib/supabase.js';
 
   // ── State ──────────────────────────────────────────────────────────
+  // loading starts false – initial data comes from SSR (M8 Task 8.6)
   let locations = [];
-  let loading = true;
+  let loading = false;
   let error = null;
 
   // Modal state
@@ -50,12 +50,22 @@
     { key: 'erdbeben',   label: 'Erdbeben',           icon: '🌍',  desc: 'Seismische Ereignisse ≥ M4.0' },
   ];
 
-  // ── Lifecycle ──────────────────────────────────────────────────────
-  onMount(async () => {
-    await loadLocations();
-  });
+  // ── Server-side data (M8 – Task 8.2 + 8.6) ────────────────────────
+  // Initial data arrives via SSR from +page.server.js (no loading spinner on first render).
+  // Mutations (create/update/delete) still run client-side and trigger loadLocations()
+  // afterwards to refresh the list from the browser Supabase client (with cache).
+
+  /** @type {import('./$types').PageData} */
+  export let data;
+
+  // Initialise from SSR data – onMount no longer needed for initial load
+  locations = data.locations;
+  loading   = false;
+  if (data.loadError) error = data.loadError;
 
   async function loadLocations() {
+    // Called after client-side mutations to refresh the list.
+    // The in-memory cache (supabase.js) is invalidated by mutations before this runs.
     loading = true;
     error = null;
     try {

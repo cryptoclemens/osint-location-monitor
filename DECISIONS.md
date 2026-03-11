@@ -1,6 +1,6 @@
 # DECISIONS.md – Architekturentscheidungen
 **Projekt:** OSInt Vacation
-**Version:** 0.8.0 | **Letzte Aktualisierung:** 2026-03-11
+**Version:** 0.9.0 | **Letzte Aktualisierung:** 2026-03-11
 
 > Dieses Dokument hält alle relevanten Architektur- und Technologie-Entscheidungen fest.
 > Format: Datum · Entscheidung · Begründung · Alternativen (abgelehnt)
@@ -253,7 +253,7 @@
 ---
 
 ### [2026-03-11] M8 Performance: Server-side Datenladen via +page.server.js
-**Status:** Geplant (M8)
+**Status:** Entschieden ✅ (M8 abgeschlossen)
 
 **Entscheidung:** Dashboard, Locations und Alerts bekommen je eine `+page.server.js` mit einer `load()`-Funktion. Die Daten werden server-seitig via `locals.supabase` geladen und im initialen HTML-Response mitgeliefert. Die `onMount()`-Datenabfragen in den Svelte-Komponenten entfallen.
 
@@ -270,7 +270,7 @@
 ---
 
 ### [2026-03-11] M8 Performance: Supabase Keep-Alive via GitHub Actions
-**Status:** Geplant (M8)
+**Status:** Entschieden ✅ (M8 abgeschlossen)
 
 **Entscheidung:** Ein neuer GitHub-Actions-Workflow (`.github/workflows/supabase-keepalive.yml`) führt täglich einen simplen `SELECT 1`-Query via `psql` gegen Supabase aus. Das verhindert, dass das Free-Tier-Projekt in den Schlafmodus geht.
 
@@ -287,7 +287,7 @@
 ---
 
 ### [2026-03-11] M8 Performance: onboarding_done-Cookie-Cache im Layout
-**Status:** Geplant (M8)
+**Status:** Entschieden ✅ (M8 abgeschlossen)
 
 **Entscheidung:** Nach dem ersten erfolgreichen `onboarding_done = true`-Check in `+layout.server.js` wird ein kurzlebiges Cookie (z. B. 24-Stunden-TTL) gesetzt. Bei Folge-Requests liest das Layout den Cookie statt eine DB-Query abzusetzen.
 
@@ -300,6 +300,22 @@
 **Alternativen:**
 - *JWT Custom Claims:* Eleganter, aber erfordert Supabase Edge Functions → zu viel Overhead für M8 → für später vorgemerkt
 - *Layout Data weitergeben:* `onboarding_done` ist bereits im Layout-`data`-Objekt – Svelte-Routen können ihn nutzen, aber der Server muss ihn trotzdem pro Request laden → abgelehnt als alleinige Lösung
+
+---
+
+### [2026-03-11] M8 UX: Einheitlicher Loading-Spinner auf allen Seiten
+**Status:** Entschieden ✅ (M8 abgeschlossen)
+
+**Entscheidung:** Das Dashboard verwendet nun denselben zentrierten Kreis-Spinner (`.loading-state` + `.spinner`-Klasse) wie die Locations- und Alerts-Seite. Der frühere `empty-state`-Block mit `⏳`-Icon wurde ersetzt.
+
+**Begründung:**
+- Visuelle Konsistenz: alle drei Datenseiten zeigen dasselbe Loading-Pattern
+- Der zentrierte Spinner (40px, Kreis-Animation, zentriert im Viewport) wirkt professioneller als ein Inline-Icon-Text
+- Wiederverwendung der CSS-Klassen aus locations/+page.svelte → kein neues Design-System nötig
+
+**Alternativen:**
+- *empty-state mit Icon behalten:* Inkonsistent mit anderen Seiten → abgelehnt
+- *Skeleton Loader:* Aufwändiger, kein Mehrwert da Loading-State mit SSR kaum noch sichtbar ist → für später vorgemerkt
 
 ---
 

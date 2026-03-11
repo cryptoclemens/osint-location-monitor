@@ -1,5 +1,5 @@
 # TASKS.md – OSInt Vacation
-**Version:** 0.9.1 | **Letzte Aktualisierung:** 2026-03-11
+**Version:** 1.0.0 | **Letzte Aktualisierung:** 2026-03-11
 
 ---
 
@@ -130,7 +130,7 @@
 
 ---
 
-## Milestone 8 – Performance & Stabilität ⬜
+## Milestone 8 – Performance & Stabilität ✅
 
 **Ziel:** Ladezeiten von 3+ Minuten auf < 5 Sekunden reduzieren. Ursachen: Supabase Free-Tier Cold Start (Projekt pausiert nach Inaktivität) + alle Daten werden ausschließlich client-seitig nach dem JS-Bootstrap geladen.
 
@@ -141,22 +141,23 @@
 
 | # | Task | Status | Priorität |
 |---|---|---|---|
-| 8.1 | Server-side `load()` für Dashboard – `+page.server.js` mit parallelem `getLocations` + `getAlerts` via `locals.supabase` | ⬜ Open | 🔴 Must |
-| 8.2 | Server-side `load()` für Locations – `+page.server.js` mit `getLocations` | ⬜ Open | 🔴 Must |
-| 8.3 | Server-side `load()` für Alerts – `+page.server.js` mit `getAlerts` | ⬜ Open | 🔴 Must |
-| 8.4 | Supabase Keep-Alive – GitHub Actions Cron (täglich) pingt Supabase mit `SELECT 1` → verhindert Projekt-Pause | ⬜ Open | 🔴 Must |
-| 8.5 | `onboarding_done`-Cookie-Cache in `+layout.server.js` – nach erstem Check Cookie setzen, Folge-Requests lesen Cookie statt DB | ⬜ Open | 🟡 Should |
-| 8.6 | Svelte-Seiten anpassen – `onMount`-Datenfetching durch `data`-Prop aus `load()` ersetzen (Dashboard, Locations, Alerts) | ⬜ Open | 🔴 Must |
-| 8.7 | DECISIONS.md + TASKS.md aktualisieren + Commit + Push | ⬜ Open | 🔴 Must |
-| 8.8 | **Visuelles Loading-State-Alignment** – Dashboard zeigt „⏳ Lade Daten…" als kleinen Inline-Text (oben, nicht zentriert); Locations-Seite zeigt zentrierten Spinner mit Text unterhalb. Dashboard-Loading-State angleichen: zentrierter Kreis-Spinner analog zur `locations/+page.svelte`-Darstellung (gleiche Proportionen, gleiche vertikale Zentrierung) | ⬜ Open | 🟡 Should |
+| 8.1 | Server-side `load()` für Dashboard – `+page.server.js` mit parallelem `getLocations` + `getAlerts` via `locals.supabase` | ✅ Done | 🔴 Must |
+| 8.2 | Server-side `load()` für Locations – `+page.server.js` mit `getLocations` | ✅ Done | 🔴 Must |
+| 8.3 | Server-side `load()` für Alerts – `+page.server.js` mit `getAlerts` | ✅ Done | 🔴 Must |
+| 8.4 | Supabase Keep-Alive – GitHub Actions Cron (täglich 06:00 UTC) pingt Supabase REST API → verhindert Projekt-Pause | ✅ Done | 🔴 Must |
+| 8.5 | `onboarding_done`-Cookie-Cache in `+layout.server.js` – nach erstem Check Cookie setzen, Folge-Requests lesen Cookie statt DB. Cookie wird bei Logout in `logout/+page.server.js` gelöscht. | ✅ Done | 🟡 Should |
+| 8.6 | Svelte-Seiten anpassen – `onMount`-Datenfetching durch `data`-Prop aus `load()` ersetzt (Dashboard, Locations, Alerts). Mutations-Refresh client-seitig erhalten. | ✅ Done | 🔴 Must |
+| 8.7 | DECISIONS.md + TASKS.md aktualisieren + Commit + Push | ✅ Done | 🔴 Must |
+| 8.8 | **Visuelles Loading-State-Alignment** – Dashboard Loading-State auf zentrierten Kreis-Spinner (`.loading-state` + `.spinner`) angeglichen. Gleiche Proportionen wie `locations/+page.svelte`. | ✅ Done | 🟡 Should |
 
-### Erwartetes Ergebnis nach M8
+### Ergebnis M8 ✅ (2026-03-11)
 
 | Szenario | Vorher | Nachher |
 |---|---|---|
 | Supabase warm (normale Nutzung) | ~3–10 s | < 1 s (Daten im initialen HTML) |
-| Supabase kalt (nach Inaktivität) | 3+ Minuten | < 30 s (Keep-Alive verhindert Pause; falls doch kalt: Server-SSR puffert den Warte-Request) |
+| Supabase kalt (nach Inaktivität) | 3+ Minuten | < 30 s (Keep-Alive verhindert Pause; falls doch kalt: SSR-Request wartet serverseitig) |
 | Navigation zwischen Seiten | ~3–5 s pro Seite | < 1 s (In-Memory-Cache aus M7 greift) |
+| Onboarding-Check pro Request | DB-Query | Cookie-Lookup (kein DB-Round-Trip nach erstem erfolgreichen Check) |
 
 ---
 
