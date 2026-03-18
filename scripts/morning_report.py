@@ -79,9 +79,9 @@ def get_news_summary(location_name: str, country_code: str, max_articles: int = 
     Returns a list of article dicts (title, source, url).
     """
     api_key = os.getenv("GNEWS_API_KEY")
-if not api_key:
-    logger.warning("GNEWS_API_KEY not set – skipping news summary")
-    return []
+    if not api_key:
+            logger.warning("GNEWS_API_KEY not set – skipping news summary")
+            return []
     # Use last part of address as search term (city/region)
     location_term = location_name.split(",")[-1].strip() if "," in location_name else location_name
     query = location_term  # Broad search for morning context
