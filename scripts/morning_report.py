@@ -10,6 +10,7 @@ Run: python scripts/morning_report.py
      python scripts/morning_report.py --test  (uses Munich, no Supabase writes)
 """
 
+import os
 import sys
 import argparse
 import requests
